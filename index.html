@@ -1,150 +1,144 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>makala.ai</title>
-<link rel="icon" href="/makala.ico" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>makala.ai</title>
+  <link rel="icon" href="/makala.ico" />
 
-<style>
-:root {
-  --bg1: #0a0015;
-  --bg2: #1b001f;
-  --accent-a: #ff49a0;
-  --accent-b: #ff7fcf;
-  --glass: rgba(255,255,255,0.03);
-  --muted: #c0b3c9;
-}
-html, body { height: 100%; margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial; }
-body {
-  display:flex; align-items:center; justify-content:center; padding:32px;
-  background: radial-gradient(600px 400px at 10% 10%, rgba(255,73,160,0.08), transparent),
-              radial-gradient(600px 400px at 90% 90%, rgba(255,127,207,0.06), transparent),
-              linear-gradient(180deg, var(--bg1), var(--bg2));
-  color:#fff;
-}
-.halo {
-  position: fixed; inset: -20%; z-index:0; filter: blur(80px); opacity:0.8; pointer-events:none;
-  background: conic-gradient(from 180deg at 50% 50%, rgba(255,73,160,0.18), rgba(255,127,207,0.12), rgba(255,73,160,0.12));
-  animation: rotate 12s linear infinite;
-}
-@keyframes rotate{to{transform:rotate(360deg)}}
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
-/* Chat card */
-.chat-card {
-  position:relative; z-index:1; width:720px; max-width:100%; height:640px;
-  display:flex; flex-direction:column; border-radius:14px; backdrop-filter:blur(12px);
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
-  box-shadow:0 12px 40px rgba(20,0,30,0.6); border:1px solid rgba(255,255,255,0.04); overflow:hidden;
-}
-.chat-header {
-  padding:16px; background:linear-gradient(90deg, rgba(255,73,160,0.03), rgba(255,127,207,0.02)); border-bottom:1px solid rgba(255,255,255,0.03);
-}
-.chat-header h2 { margin:0; font-size:18px; }
-.messages { flex:1; padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; background: linear-gradient(180deg, rgba(255,255,255,0.002), transparent); }
-
-/* bubbles */
-.bubble { max-width:78%; padding:12px 14px; border-radius:12px; line-height:1.45; box-shadow:0 6px 18px rgba(20,0,30,0.6); opacity:0; transform:translateY(8px); animation:pop .18s forwards; }
-@keyframes pop{to{opacity:1; transform:none;}}
-.user { align-self:flex-end; background:linear-gradient(90deg,#1b001f,#0a0015); border:1px solid rgba(255,255,255,0.03);}
-.bot { align-self:flex-start; background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); color:#fff; border:1px solid rgba(255,255,255,0.03);}
-.bot.markdown pre{background:#1b001f; padding:10px; border-radius:8px; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace; font-size:13px;}
-.bot.markdown code{background: rgba(255,255,255,0.03); padding:2px 6px; border-radius:6px;}
-
-/* typing */
-.typing { display:inline-flex; gap:6px; padding:8px 10px; border-radius:10px;}
-.dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.35); animation:blink 1s infinite;}
-.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
-@keyframes blink{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
-
-.input-bar { display:flex; align-items:center; gap:12px; padding:14px; border-top:1px solid rgba(255,255,255,0.03); background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);}
-.input { flex:1; background:transparent; border-radius:10px; padding:12px 14px; border:1px solid rgba(255,255,255,0.04); outline:none; color:inherit; }
-.send { background:linear-gradient(90deg,var(--accent-a),var(--accent-b)); border:none; padding:10px 14px; border-radius:10px; color:white; font-weight:700; cursor:pointer; }
-
-@media(max-width:780px){ .chat-card { width:100%; height:90vh; } }
-</style>
+  <style>
+    :root {
+      --bg1:#0a0015; --bg2:#1b001f;
+      --accent-a:#ff49a0; --accent-b:#ff7fcf;
+      --muted:#c0b3c9;
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial}
+    body{
+      display:flex;align-items:center;justify-content:center;padding:32px;
+      background: radial-gradient(600px 400px at 10% 10%, rgba(255,73,160,0.08), transparent),
+                  radial-gradient(600px 400px at 90% 90%, rgba(255,127,207,0.06), transparent),
+                  linear-gradient(180deg,var(--bg1),var(--bg2));
+      color:#fff;
+    }
+    .halo{position:fixed;inset:-20%;z-index:0;filter:blur(80px);pointer-events:none;background:conic-gradient(from 180deg at 50% 50%, rgba(255,73,160,0.16), rgba(255,127,207,0.12), rgba(255,73,160,0.12));animation:rotate 12s linear infinite;opacity:.9}
+    @keyframes rotate{to{transform:rotate(360deg)}}
+    .chat-card{position:relative;z-index:1;width:720px;max-width:100%;height:640px;display:flex;flex-direction:column;border-radius:14px;backdrop-filter:blur(12px);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.005));box-shadow:0 12px 40px rgba(20,0,30,0.6);border:1px solid rgba(255,255,255,0.04);overflow:hidden}
+    .chat-header{padding:16px;background:linear-gradient(90deg,rgba(255,73,160,0.03),rgba(255,127,207,0.02));border-bottom:1px solid rgba(255,255,255,0.03)}
+    .chat-header h2{margin:0;font-size:18px}
+    .messages{flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,rgba(255,255,255,0.002),transparent)}
+    .bubble{max-width:78%;padding:12px 14px;border-radius:12px;line-height:1.45;box-shadow:0 6px 18px rgba(20,0,30,0.6);opacity:0;transform:translateY(8px);animation:pop .18s forwards;word-break:break-word}
+    @keyframes pop{to{opacity:1;transform:none}}
+    .user{align-self:flex-end;background:linear-gradient(90deg,#1b001f,#0a0015);border:1px solid rgba(255,255,255,0.03);color:#ffdff4}
+    .bot{align-self:flex-start;background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);color:#fff}
+    .bot.markdown pre{background:#1b001f;padding:10px;border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono',monospace;font-size:13px}
+    .bot.markdown code{background:rgba(255,255,255,0.03);padding:2px 6px;border-radius:6px}
+    .typing{display:inline-flex;gap:6px;padding:8px 10px;border-radius:10px}
+    .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.35);animation:blink 1s infinite}
+    .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+    @keyframes blink{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+    .input-bar{display:flex;align-items:center;gap:12px;padding:14px;border-top:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent)}
+    .input{flex:1;background:transparent;border-radius:10px;padding:12px 14px;border:1px solid rgba(255,255,255,0.04);outline:none;color:inherit}
+    .send{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));border:none;padding:10px 14px;border-radius:10px;color:white;font-weight:700;cursor:pointer}
+    @media(max-width:780px){.chat-card{width:100%;height:90vh}}
+  </style>
 </head>
 <body>
-<div class="halo" aria-hidden></div>
+  <div class="halo" aria-hidden></div>
 
-<div class="chat-card">
-  <div class="chat-header"><h2>makala.ai</h2></div>
-  <div id="messages" class="messages" role="log" aria-live="polite"></div>
-  <div class="input-bar">
-    <input id="input" class="input" placeholder="Ask me anything..." />
-    <button id="sendBtn" class="send">send</button>
+  <div class="chat-card" role="application" aria-label="Makala chat">
+    <div class="chat-header"><h2>makala.ai</h2></div>
+    <div id="messages" class="messages" role="log" aria-live="polite"></div>
+    <div class="input-bar">
+      <input id="input" class="input" placeholder="ask me anything..." aria-label="message input" />
+      <button id="sendBtn" class="send" aria-label="send message">send</button>
+    </div>
   </div>
-</div>
 
-<script>
-const messages = document.getElementById('messages');
-const input = document.getElementById('input');
-const sendBtn = document.getElementById('sendBtn');
+  <script>
+    // front-end: marked + DOMPurify are loaded via CDN above
+    const messages = document.getElementById('messages');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
 
-function appendBubble(html, klass, isHtml=false){
-  const d = document.createElement('div');
-  d.className = 'bubble ' + klass;
-  if(isHtml) d.innerHTML = html; else d.textContent = html;
-  if(klass==='bot') d.classList.add('markdown');
-  messages.appendChild(d);
-  messages.scrollTop = messages.scrollHeight;
-}
+    function appendBubble(content, klass, isHtml=false){
+      const el = document.createElement('div');
+      el.className = 'bubble ' + klass;
+      if(isHtml){
+        // sanitize parsed markdown HTML
+        el.innerHTML = DOMPurify.sanitize(content);
+      } else {
+        el.textContent = content;
+      }
+      if(klass === 'bot') el.classList.add('markdown');
+      messages.appendChild(el);
+      messages.scrollTop = messages.scrollHeight;
+    }
 
-function showTyping(){
-  const t = document.createElement('div');
-  t.className = 'bubble bot typing';
-  t.id = '__typing';
-  t.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
-  messages.appendChild(t);
-  messages.scrollTop = messages.scrollHeight;
-}
+    function showTyping(){
+      const t = document.createElement('div');
+      t.className = 'bubble bot typing';
+      t.id = '__typing';
+      t.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+      messages.appendChild(t);
+      messages.scrollTop = messages.scrollHeight;
+    }
 
-function removeTyping(){
-  const t = document.getElementById('__typing');
-  if(t) t.remove();
-}
+    function removeTyping(){
+      const t = document.getElementById('__typing');
+      if(t) t.remove();
+    }
 
-async function send(){
-  const text = input.value.trim();
-  if(!text) return;
-  appendBubble(escapeHtml(text), 'user');
-  input.value = '';
+    async function send(){
+      const text = input.value.trim();
+      if(!text) return;
+      appendBubble(escapeHtml(text), 'user', false);
+      input.value = '';
+      showTyping();
+      sendBtn.disabled = true;
 
-  showTyping();
-  sendBtn.disabled = true;
+      try {
+        const resp = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ message: text })
+        });
 
-  try{
-    const resp = await fetch('/api/chat', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ message: text })
+        if (!resp.ok) {
+          const err = await resp.text();
+          removeTyping();
+          sendBtn.disabled = false;
+          appendBubble('error: ' + err, 'bot', false);
+          return;
+        }
+
+        const data = await resp.json();
+        removeTyping();
+        sendBtn.disabled = false;
+
+        const md = data?.reply || 'no response lol';
+        const html = marked.parse(md);
+        appendBubble(html, 'bot', true);
+
+      } catch (e) {
+        removeTyping();
+        sendBtn.disabled = false;
+        appendBubble('network error lol', 'bot', false);
+      }
+    }
+
+    sendBtn.addEventListener('click', send);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
     });
 
-    const data = await resp.json();
-    removeTyping();
-    sendBtn.disabled = false;
+    function escapeHtml(u){ return u.replace(/[&<>"]/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 
-    const md = data && data.reply ? data.reply : 'no response lol';
-    const parsed = marked.parse(md);
-    appendBubble(parsed, 'bot', true);
-
-  }catch(err){
-    removeTyping();
-    sendBtn.disabled = false;
-    appendBubble('network error lol', 'bot');
-  }
-}
-
-sendBtn.addEventListener('click', send);
-input.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
-
-function escapeHtml(unsafe){
-  return unsafe.replace(/[&<>"]+/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-}
-
-// welcome message
-appendBubble('hey im makala lol ask me anything fr', 'bot');
-</script>
+    // single welcome message controlled by front-end
+    appendBubble("hey im makala lol ask me anything fr", 'bot', false);
+  </script>
 </body>
 </html>
