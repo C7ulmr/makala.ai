@@ -2,122 +2,176 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>makala.ai</title>
   <link rel="icon" href="/makala.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto;
-      background: #0f172a;
-      color: #e5e7eb;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+    :root{
+      --bg1:#071226; --bg2:#081028; --glass: rgba(255,255,255,0.03);
+      --accent-a:#7c3aed; --accent-b:#06b6d4; --muted: #9aa4b2;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      background: radial-gradient(600px 400px at 10% 10%, rgba(124,58,237,0.06), transparent),
+                  radial-gradient(600px 400px at 90% 90%, rgba(6,182,212,0.04), transparent),
+                  linear-gradient(180deg,var(--bg1),var(--bg2));
+      color:#e6eef7;display:flex;align-items:center;justify-content:center;padding:32px;
     }
 
-    .chat {
-      width: 420px;
-      max-width: 95%;
-      background: #020617;
-      border-radius: 12px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+    /* animated gradient halo */
+    .halo{position:fixed;inset:-20%;z-index:0;filter:blur(80px);opacity:0.8;pointer-events:none;background:conic-gradient(from 180deg at 50% 50%, rgba(124,58,237,0.18), rgba(6,182,212,0.12), rgba(124,58,237,0.12));animation:rotate 12s linear infinite}
+    @keyframes rotate{to{transform:rotate(360deg)}}
 
-    .messages {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .frame{position:relative;z-index:1; width:760px; max-width:calc(100% - 48px); height:640px; display:grid;grid-template-columns:360px 1fr;gap:22px;}
 
-    .msg {
-      padding: 10px 12px;
-      border-radius: 8px;
-      max-width: 85%;
-      line-height: 1.4;
-      font-size: 14px;
-    }
+    /* left panel */
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:18px;backdrop-filter:blur(8px);box-shadow:0 12px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.04)}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 8px 30px rgba(124,58,237,0.14)}
+    .brand h1{font-size:18px;margin:0}
+    .brand p{margin:0;color:var(--muted);font-size:13px}
 
-    .user {
-      align-self: flex-end;
-      background: #2563eb;
-    }
+    .small{font-size:13px;color:var(--muted);margin-top:12px}
 
-    .bot {
-      align-self: flex-start;
-      background: #1e293b;
-    }
+    /* right — chat */
+    .chat{display:flex;flex-direction:column;height:100%;border-radius:14px;overflow:hidden}
+    .chat-header{padding:18px;border-bottom:1px solid rgba(255,255,255,0.03);background:linear-gradient(90deg, rgba(124,58,237,0.03), rgba(6,182,212,0.02));display:flex;align-items:center;gap:12px}
+    .chat-header h2{margin:0;font-size:16px}
 
-    .input {
-      display: flex;
-      gap: 8px;
-    }
+    .messages{flex:1;padding:18px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;background:linear-gradient(180deg, rgba(255,255,255,0.006), transparent)}
 
-    input {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      font-size: 14px;
-    }
+    .bubble{max-width:78%;padding:12px 14px;border-radius:12px;line-height:1.45;box-shadow:0 6px 18px rgba(2,6,23,0.6);opacity:0;transform:translateY(8px);animation:pop .18s forwards}
+    @keyframes pop{to{opacity:1;transform:none}}
 
-    button {
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: none;
-      background: #22c55e;
-      font-weight: 600;
-      cursor: pointer;
-    }
+    .user{align-self:flex-end;background:linear-gradient(90deg,#0b1220,#111827);border:1px solid rgba(255,255,255,0.03)}
+    .bot{align-self:flex-start;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:#e6eef7;border:1px solid rgba(255,255,255,0.03)}
+
+    /* typing indicator */
+    .typing{display:inline-flex;gap:6px;padding:8px 10px;border-radius:10px}
+    .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.35);animation:blink 1s infinite}
+    .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+    @keyframes blink{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+
+    /* input */
+    .input-bar{display:flex;align-items:center;gap:12px;padding:14px;border-top:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)}
+    .input{flex:1;background:transparent;border-radius:10px;padding:12px 14px;border:1px solid rgba(255,255,255,0.04);outline:none;color:inherit}
+    .send{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));border:none;padding:10px 14px;border-radius:10px;color:white;font-weight:700;cursor:pointer}
+
+    /* markdown styles */
+    .bot .markdown{color:#e6eef7}
+    .bot pre{background:#071026;padding:10px;border-radius:8px;overflow:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace;font-size:13px}
+    .bot code{background:rgba(255,255,255,0.03);padding:2px 6px;border-radius:6px}
+
+    /* responsive */
+    @media (max-width:880px){.frame{grid-template-columns:1fr;height:90vh;width:calc(100% - 32px)} }
   </style>
 </head>
 <body>
+  <div class="halo" aria-hidden></div>
+  <div class="frame">
 
-<div class="chat">
-  <div id="messages" class="messages"></div>
+    <div class="card">
+      <div class="brand">
+        <div class="logo">M</div>
+        <div>
+          <h1>makala.ai</h1>
+          <p>Intelligent assistant</p>
+        </div>
+      </div>
+      <p class="small">Secure. Fast. Professional. This demo proxies to OpenAI via your server (keep the key server-side).</p>
+    </div>
 
-  <div class="input">
-    <input id="input" placeholder="Type a message…" />
-    <button onclick="send()">Send</button>
+    <div class="chat card">
+      <div class="chat-header">
+        <h2>Makala • AI Assistant</h2>
+      </div>
+
+      <div id="messages" class="messages" role="log" aria-live="polite"></div>
+
+      <div class="input-bar">
+        <input id="input" class="input" placeholder="Ask me anything..." />
+        <button id="sendBtn" class="send">Send</button>
+      </div>
+    </div>
+
   </div>
-</div>
 
-<script>
-  const messages = document.getElementById("messages");
-  const input = document.getElementById("input");
+  <script>
+    // Simple chat + markdown rendering using marked.js
+    const messages = document.getElementById('messages');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
 
-  function add(text, cls) {
-    const div = document.createElement("div");
-    div.className = "msg " + cls;
-    div.textContent = text;
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
-  }
+    function appendBubble(html, klass, isHtml=false){
+      const d = document.createElement('div');
+      d.className = 'bubble ' + klass;
+      if(isHtml) d.innerHTML = html; else d.textContent = html;
+      // allow markdown blocks to be styled
+      if(klass === 'bot') d.classList.add('markdown');
+      messages.appendChild(d);
+      messages.scrollTop = messages.scrollHeight;
+    }
 
-  async function send() {
-    const text = input.value.trim();
-    if (!text) return;
-    input.value = "";
-    add(text, "user");
+    function showTyping(){
+      const t = document.createElement('div');
+      t.className = 'bubble bot typing';
+      t.id = '__typing';
+      t.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+      messages.appendChild(t);
+      messages.scrollTop = messages.scrollHeight;
+    }
 
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text })
-    });
+    function removeTyping(){
+      const t = document.getElementById('__typing');
+      if(t) t.remove();
+    }
 
-    const data = await res.json();
-    add(data.reply, "bot");
-  }
-</script>
+    async function send(){
+      const text = input.value.trim();
+      if(!text) return;
+      appendBubble(escapeHtml(text), 'user');
+      input.value = '';
 
+      showTyping();
+      sendBtn.disabled = true;
+
+      try{
+        const resp = await fetch('/api/chat', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ message: text })
+        });
+
+        const data = await resp.json();
+        removeTyping();
+        sendBtn.disabled = false;
+
+        const md = data && data.reply ? data.reply : 'No response.';
+        // convert markdown -> HTML (marked.js)
+        const parsed = marked.parse(md);
+        appendBubble(parsed, 'bot', true);
+
+      }catch(err){
+        removeTyping();
+        sendBtn.disabled = false;
+        appendBubble('Network error. Try again.', 'bot');
+      }
+    }
+
+    sendBtn.addEventListener('click', send);
+    input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
+
+    // escape user's text to avoid HTML injection
+    function escapeHtml(unsafe){
+      return unsafe.replace(/[&<>"]+/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m]));
+    }
+
+    // welcome
+    appendBubble('Hi — I\'m Makala. Ask me anything. (Supports Markdown, code blocks, lists.)', 'bot');
+  </script>
 </body>
 </html>
