@@ -1,56 +1,123 @@
 <!DOCTYPE html>
-<div id="messages" class="messages"></div>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>makala.ai</title>
+  <link rel="icon" href="/makala.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto;
+      background: #0f172a;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
-<form id="chatForm">
-<input id="input" placeholder="Type a message..." autocomplete="off" />
-<button type="submit">Send</button>
-</form>
+    .chat {
+      width: 420px;
+      max-width: 95%;
+      background: #020617;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .msg {
+      padding: 10px 12px;
+      border-radius: 8px;
+      max-width: 85%;
+      line-height: 1.4;
+      font-size: 14px;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: #2563eb;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: #1e293b;
+    }
+
+    .input {
+      display: flex;
+      gap: 8px;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #22c55e;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat">
+  <div id="messages" class="messages"></div>
+
+  <div class="input">
+    <input id="input" placeholder="Type a message…" />
+    <button onclick="send()">Send</button>
+  </div>
 </div>
 
-
 <script>
-const form = document.getElementById('chatForm');
-const input = document.getElementById('input');
-const messages = document.getElementById('messages');
+  const messages = document.getElementById("messages");
+  const input = document.getElementById("input");
 
+  function add(text, cls) {
+    const div = document.createElement("div");
+    div.className = "msg " + cls;
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
 
-function addMessage(text, type) {
-const div = document.createElement('div');
-div.className = 'msg ' + type;
-div.textContent = text;
-messages.appendChild(div);
-messages.scrollTop = messages.scrollHeight;
-}
+  async function send() {
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = "";
+    add(text, "user");
 
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text })
+    });
 
-form.addEventListener('submit', async (e) => {
-e.preventDefault();
-
-
-const text = input.value.trim();
-if (!text) return;
-
-
-addMessage(text, 'user');
-input.value = '';
-
-
-const res = await fetch('/api/chat', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ message: text })
-});
-
-
-const data = await res.json();
-addMessage(data.reply, 'bot');
-});
-
-
-addMessage('Hi, I am Makala.', 'bot');
+    const data = await res.json();
+    add(data.reply, "bot");
+  }
 </script>
-
 
 </body>
 </html>
