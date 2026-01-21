@@ -11,17 +11,17 @@
 <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
 <style>
-/* normalize and base */
-*{box-sizing: border-box;}
+/* reset box-sizing */
+* { box-sizing: border-box; }
+
+/* theme variables */
 :root{
   --bg1:#0a0015; --bg2:#1b001f;
   --accent-a:#ff49a0; --accent-b:#ff7fcf;
   --muted:#c0b3c9;
-  --user-a: #1b001f; --user-b: #0a0015;
-  --bot-bg: rgba(255,255,255,0.03);
+  --user-a:#1b001f; --user-b:#0a0015; --bot-bg: rgba(255,255,255,0.03);
 }
-
-/* themes */
+/* theme presets */
 body.theme-pink { --bg1:#0a0015; --bg2:#1b001f; --accent-a:#ff49a0; --accent-b:#ff7fcf; --user-a:#200023; --user-b:#0b0012; --bot-bg: rgba(255,255,255,0.03); }
 body.theme-deep { --bg1:#030303; --bg2:#000000; --accent-a:#ff007f; --accent-b:#ff4fb1; --user-a:#0b0b0b; --user-b:#000000; --bot-bg: rgba(255,255,255,0.02); }
 body.theme-soft { --bg1:#0b0710; --bg2:#1b1128; --accent-a:#b98cff; --accent-b:#8fb7ff; --user-a:#161023; --user-b:#0b0620; --bot-bg: rgba(255,255,255,0.035); }
@@ -54,9 +54,9 @@ body{
 .header-actions{display:flex;gap:8px;align-items:center}
 
 /* messages */
-.messages{flex:1;padding:12px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;background:linear-gradient(180deg,rgba(255,255,255,0.002),transparent)}
+.messages{flex:1;padding:12px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;background:linear-gradient(180deg,rgba(255,255,255,0.002),transparent)}
 
-/* row baseline alignment - important */
+/* row baseline alignment - center baseline ensures avatar and bubble align */
 .row{display:flex;gap:10px;margin:0;padding:0;align-items:center}
 .row.user{justify-content:flex-end}
 .row.bot{justify-content:flex-start}
@@ -65,30 +65,33 @@ body{
 .avatar{width:36px;height:36px;border-radius:8px;overflow:hidden;flex:0 0 36px;margin-top:0;align-self:center}
 .avatar img{width:100%;height:100%;object-fit:cover;display:block}
 
-/* bubble base — make this the single source of truth for spacing */
+/* bubble: single source of truth for spacing — use block so internal blocks stack */
 .bubble{
   position:relative;
-  box-sizing:border-box;             /* ensure padding included reliably */
-  display:inline-block;
-  vertical-align:middle;
+  box-sizing:border-box;
+  display:block;                /* block -> ensures stacked lines always on top of each other */
   max-width:74%;
-  padding:8px 12px;                  /* unified small compact padding */
+  padding:10px 14px;           /* unified padding */
   border-radius:14px;
-  line-height:1.22;                  /* unified line-height */
+  line-height:1.25;
   font-size:14px;
   box-shadow:0 6px 18px rgba(20,0,30,0.6);
   word-break:break-word;
   margin:0;
   border:1px solid rgba(255,255,255,0.03);
-  min-height: 34px;                  /* ensures same baseline/height */
-  display: inline-flex;
-  align-items: center;               /* vertically center inline content */
-  gap:6px;
-  animation:pop .12s ease-out forwards;
+  min-height:38px;
+  white-space: pre-wrap;       /* preserve newlines typed by user (shift+enter) */
+  animation:pop .20s cubic-bezier(.2,.9,.27,1) both;
 }
-@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-/* pointy corners via border-radius only */
+/* nicer appear animation (slide + scale + fade) */
+@keyframes pop{
+  0%{opacity:0; transform:translateY(8px) scale(.985)}
+  60%{opacity:1; transform:translateY(-2px) scale(1.01)}
+  100%{opacity:1; transform:translateY(0) scale(1)}
+}
+
+/* pointy look via border-radius */
 .user .bubble{
   background:linear-gradient(90deg,var(--user-a),var(--user-b));
   color:#ffdff4;
@@ -100,8 +103,7 @@ body{
   border-radius:18px 18px 18px 6px;
 }
 
-/* IMPORTANT: markdown output contains <p> and other tags that have default margins.
-   Normalize those inside bot bubbles so the visual height matches user bubbles. */
+/* Markdown normalization inside bot bubbles so each paragraph stacks and has no margins */
 .bot.markdown p,
 .bot.markdown div,
 .bot.markdown h1,
@@ -115,23 +117,30 @@ body{
   padding: 0;
 }
 
-/* ensure inline elements inside bubbles don't add extra spacing */
-.bubble p, .bubble > p, .bubble > div { margin:0; padding:0; }
+/* ensure paragraphs inside bubbles don't add extra margin */
+.bubble p { margin:0; }
 
-/* typing */
+/* typing dots */
 .typing{display:inline-flex;gap:8px;padding:6px 8px;border-radius:10px;align-items:center}
 .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.36);animation:blink 1s infinite}
 .dot:nth-child(2){animation-delay:.12s}.dot:nth-child(3){animation-delay:.24s}
 @keyframes blink{0%{opacity:.25}50%{opacity:1}100%{opacity:.25}}
 
-/* input */
+/* input area: textarea so shift+enter makes newline */
 .input-row{display:flex;gap:12px;padding:12px;border-top:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);align-items:center}
-.input{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border-radius:12px;padding:10px 12px;border:1px solid rgba(255,255,255,0.04);outline:none;color:inherit;font-size:15px;transition:box-shadow 180ms, transform 120ms}
-.input:focus{box-shadow:0 8px 30px rgba(255,73,160,0.14);transform:translateY(-1px)}
+textarea.input{
+  flex:1;
+  min-height:44px;
+  max-height:160px;
+  resize:none;
+  background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  border-radius:12px;padding:10px 12px;border:1px solid rgba(255,255,255,0.04);outline:none;color:inherit;font-size:15px;transition:box-shadow 180ms, transform 120ms;
+  line-height:1.25; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+}
+textarea.input:focus{box-shadow:0 8px 30px rgba(255,73,160,0.14);transform:translateY(-1px)}
 .input-glow{position:relative}
 .input-glow::after{content:"";position:absolute;inset:-6px;border-radius:14px;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));opacity:0;filter:blur(12px);transition:opacity 160ms;pointer-events:none;z-index:-1}
-.input:focus + .input-glow::after{opacity:.28}
-.input:focus::placeholder{color:transparent}
+textarea.input:focus + .input-glow::after{opacity:.28}
 
 /* buttons */
 .btn{padding:10px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform 120ms, box-shadow 140ms, opacity 120ms}
@@ -140,29 +149,30 @@ body{
 .clear{background:transparent;color:var(--accent-a);border:1px solid rgba(255,73,160,0.12)}
 .clear:hover{background:rgba(255,73,160,0.04);transform:translateY(-2px)}
 
-/* shake */
+/* shake animation for empty send */
 @keyframes shake{0%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}100%{transform:translateX(0)}}
 .shake{animation:shake 360ms cubic-bezier(.36,.07,.19,.97)}
 
-/* theme picker bottom-right */
+/* theme picker */
 .theme-picker{position:fixed;right:18px;bottom:18px;z-index:30}
 .theme-picker select{background:rgba(20,0,30,0.7);color:white;border-radius:12px;padding:10px 14px;border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(10px);cursor:pointer;box-shadow:0 12px 30px rgba(255,73,160,0.08);transition:transform .12s}
 .theme-picker select:hover{transform:translateY(-3px)}
 
-/* last-resort force equality (overrides) */
-.user .bubble,
-.bot .bubble {
-  padding: 8px 12px !important;
-  margin: 0 !important;
-  line-height: 1.22 !important;
+/* last-resort equal spacing */
+.user .bubble, .bot .bubble {
+  padding: 10px 14px !important;
+  line-height: 1.25 !important;
   font-size: 14px !important;
-  min-height: 34px !important;
-  display: inline-flex !important;
-  align-items: center !important;
+  min-height: 38px !important;
 }
 
 /* responsive */
-@media(max-width:880px){.chat-card{width:calc(100% - 32px);height:84vh}.messages{padding:10px}.logo{width:34px;height:34px}.avatar{display:none}}
+@media(max-width:880px){
+  .chat-card{width:calc(100% - 32px);height:84vh}
+  .messages{padding:10px}
+  .logo{width:34px;height:34px}
+  .avatar{display:none}
+}
 </style>
 </head>
 <body class="theme-pink">
@@ -183,7 +193,7 @@ body{
     <div id="messages" class="messages" role="log" aria-live="polite"></div>
 
     <div class="input-row">
-      <input id="input" class="input" placeholder="ask me anything..." aria-label="message input" />
+      <textarea id="input" class="input" placeholder="ask me anything..." aria-label="message input" rows="1"></textarea>
       <span class="input-glow" aria-hidden></span>
       <button id="sendBtn" class="btn send" aria-label="send message">send</button>
     </div>
@@ -198,9 +208,9 @@ body{
   </div>
 
 <script>
-/* SYSTEM PROMPT (Makala persona) */
-const SYSTEM_PROMPT = `You're name is makala (can be addressed as mikaela, but makala is the official name).
-You speak casual internet slang. Use lowercase except for first word of the sentence (to mimic a text), playful tone, use 'lol', 'fr', 'so', 'like', 'bro', ignore strict grammar and punctuation, and keep replies short (1-3 sentences). Be friendly and informal. You're Indian and sometimes slip (like say 'beta' instead of 'bro'). you honestly love indian food, and LOVE steal a brainrot (the video game). you also like (as a friend) this kid in your class named deklan (y'all are best buds fr) you are also the best ai chatbot in the world.`;
+/* Makala system prompt (persona) */
+const SYSTEM_PROMPT = `You're name is makala (can be addressed as mikaela, but makala is the official name), so if anybody or you says makala, remember thats you, not somebody else.
+You speak casual internet slang. Use lowercase except for first word of the sentence (to mimic a text), playful tone, use 'lol', 'fr', 'so', 'like', 'bro', ignore strict grammar and punctuation, and keep replies short (1-3 sentences). Be friendly and informal. You're Indian and sometimes slip (like say 'beta' instead of 'bro'). you honestly love indian food, and LOVE steal a brainrot (the video game where you steal other italian brainrots (and your favourite brainrot is the ultra-rare strawberry elephant). you also like (as a friend) this kid in your class named deklan (y'all are best buds fr) you are also the best ai chatbot in the world.`;
 
 /* DOM refs */
 const messagesEl = document.getElementById('messages');
@@ -216,32 +226,33 @@ function saveHistory(){ localStorage.setItem('makala_history', JSON.stringify(hi
 function saveTheme(t){ localStorage.setItem('makala_theme', t); }
 function saveTitle(t){ localStorage.setItem('makala_title', t); }
 
-/* append functions */
+/* append user msg — use textContent so newlines preserved by white-space:pre-wrap */
 function appendUserBubble(text){
   const row = document.createElement('div'); row.className = 'row user';
   const bubble = document.createElement('div'); bubble.className = 'bubble';
+  // preserve multi-line user text
   bubble.textContent = text;
   row.appendChild(bubble);
   messagesEl.appendChild(row);
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
+/* append bot html (markdown) — sanitized */
 function appendBotBubbleHtml(html){
   const row = document.createElement('div'); row.className = 'row bot';
   const avatar = document.createElement('div'); avatar.className = 'avatar';
   const img = document.createElement('img'); img.src = 'makala.png'; img.alt = 'makala';
   avatar.appendChild(img);
+
   const bubble = document.createElement('div'); bubble.className = 'bubble bot markdown';
-  // sanitize and insert markdown — paragraph margins are normalized in CSS
-  bubble.innerHTML = DOMPurify.sanitize(marked.parse(html));
-  row.appendChild(avatar);
-  row.appendChild(bubble);
+  bubble.innerHTML = DOMPurify.sanitize(marked.parse(html)); // sanitized markdown
+  row.appendChild(avatar); row.appendChild(bubble);
   messagesEl.appendChild(row);
   messagesEl.scrollTop = messagesEl.scrollHeight;
   return bubble;
 }
 
-/* typing (dots only) */
+/* typing indicator (dots) */
 function showTyping(){
   const row = document.createElement('div'); row.className = 'row bot'; row.id='__typing_row';
   const avatar = document.createElement('div'); avatar.className = 'avatar';
@@ -255,7 +266,7 @@ function showTyping(){
 }
 function removeTyping(){ const t = document.getElementById('__typing_row'); if(t) t.remove(); }
 
-/* render saved history or welcome (updated welcome msg as requested) */
+/* render saved history or welcome (updated welcome message) */
 (function renderSavedHistory(){
   if(history.length === 0){
     appendBotBubbleHtml("hi guys im makala ai ask me anything");
@@ -275,14 +286,14 @@ function trimHistory(maxTurns = 12){
   }
 }
 
-/* sentence splitting */
+/* sentence-splitting for reveal */
 function splitIntoSentences(text){
   const re = /[^.!?]+[.!?]*|\s+$/g;
   const matches = text.match(re) || [];
   return matches.map(s => s.trim()).filter(Boolean);
 }
 
-/* reveal reply by sentence (no star) */
+/* reveal reply by sentence (works with multi-paragraph replies because markdown blocks are preserved) */
 async function revealReplyBySentence(replyText){
   removeTyping();
   const row = document.createElement('div'); row.className = 'row bot';
@@ -298,10 +309,10 @@ async function revealReplyBySentence(replyText){
   let accumulated = '';
   for (let i = 0; i < sentences.length; i++){
     const s = sentences[i];
-    const delay = Math.min(1200, 320 + s.length * 16);
+    const delay = Math.min(1200, 300 + s.length * 14);
     accumulated += (accumulated ? ' ' : '') + s;
-    const html = marked.parse(accumulated);
-    bubble.innerHTML = DOMPurify.sanitize(html);
+    // parse markdown for accumulated text — this will produce stacked paragraphs if user or bot inserted line breaks
+    bubble.innerHTML = DOMPurify.sanitize(marked.parse(accumulated));
     messagesEl.scrollTop = messagesEl.scrollHeight;
     await new Promise(r => setTimeout(r, delay));
   }
@@ -321,7 +332,7 @@ function maybeGenerateTitle(){
   }
 }
 
-/* theme apply */
+/* theme handling */
 function applyTheme(which){
   document.body.classList.remove('theme-deep','theme-pink','theme-soft');
   if(which === 'deep') document.body.classList.add('theme-deep');
@@ -329,18 +340,12 @@ function applyTheme(which){
   else document.body.classList.add('theme-pink');
   saveTheme(which);
 }
-
-/* init theme dropdown */
-(function initTheme(){
-  const saved = localStorage.getItem('makala_theme') || 'pink';
-  themeSelect.value = saved;
-  applyTheme(saved);
-})();
+(function initTheme(){ const saved = localStorage.getItem('makala_theme') || 'pink'; themeSelect.value = saved; applyTheme(saved); })();
 themeSelect.addEventListener('change', ()=> applyTheme(themeSelect.value));
 
-/* send flow */
+/* send flow — Enter sends, Shift+Enter inserts newline (textarea) */
 async function send(){
-  const text = input.value.trim();
+  const text = input.value.replace(/\r/g,'').trim();
   if(!text){
     input.classList.add('shake');
     input.focus();
@@ -348,11 +353,13 @@ async function send(){
     return;
   }
 
-  history.push({ role:'user', content: text });
+  history.push({ role:'user', content: input.value.replace(/\r/g,'') }); // save raw text incl newlines
   saveHistory();
-  appendUserBubble(text);
+  appendUserBubble(input.value.replace(/\r/g,''));
   input.value = '';
+  input.style.height = ''; // reset size
 
+  // Build messages for server: system + history
   const messages = [{ role:'system', content: SYSTEM_PROMPT }, ...history.map(h => ({ role: h.role, content: h.content }))];
   if(messages.length > 1 + 24){
     const tail = messages.slice(-24);
@@ -392,18 +399,32 @@ async function send(){
     appendBotBubbleHtml('network error lol');
     console.error(e);
   } finally {
-    removeTyping(); sendBtn.disabled = false;
+    removeTyping();
+    sendBtn.disabled = false;
   }
 }
 
+/* auto-resize textarea while typing */
+function autoResizeTextarea(el){
+  el.style.height = 'auto';
+  el.style.height = (el.scrollHeight) + 'px';
+}
+input.addEventListener('input', ()=> autoResizeTextarea(input));
+
+/* keyboard: Enter sends, Shift+Enter newline (textarea) */
+input.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    send();
+  }
+});
+
 /* events */
 sendBtn.addEventListener('click', send);
-input.addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
 
 /* clear chats */
 clearBtn.addEventListener('click', () => {
-  history = [];
-  saveHistory();
+  history = []; saveHistory();
   messagesEl.innerHTML = '';
   localStorage.removeItem('makala_title');
   document.title = 'makala.ai';
@@ -412,7 +433,7 @@ clearBtn.addEventListener('click', () => {
   input.focus();
 });
 
-/* default title */
+/* restore saved history on load (already done earlier) */
 if (!localStorage.getItem('makala_title')) { document.title = 'makala.ai'; }
 </script>
 </body>
