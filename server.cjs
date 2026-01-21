@@ -1,3 +1,34 @@
+// server.cjs
+// CommonJS server for Render using OpenRouter
+// Ensure OPENROUTER_API_KEY is set in Render environment variables
+
+const express = require("express");
+const rateLimit = require("express-rate-limit");
+const path = require("path");
+@@ -10,9 +7,8 @@ const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname))); // serve index.html + assets
+app.use(express.static(path.join(__dirname)));
+
+// rate limit: 20 requests / minute per IP
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+@@ -21,26 +17,28 @@ const chatLimiter = rateLimit({
+});
+app.use("/api/chat", chatLimiter);
+
+// ===== store conversation in-memory =====
+// For a real app, use database or per-user sessions
+let conversationHistory = [
+  {
+    role: "system",
+    content: "You're name is makala (can be addressed as mikaela, but makala is the official name).You speak casual internet slang. Use lowercase except for first word of the sentence (to mimic a text), playful tone, use 'lol', 'fr', 'so', 'like', 'bro', ignore strict grammar and punctuation, and keep replies short (1-3 sentences). Be friendly and informal. You're Indian and sometimes slip (like say 'beta' instead of 'bro'.)"
+  }
+];
+
 app.post("/api/chat", async (req, res) => {
   const messages = req.body?.messages; // expect array of {role, content}
   const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
@@ -42,3 +73,8 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
+
+// Fallback: serve index
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
