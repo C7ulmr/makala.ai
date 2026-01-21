@@ -1,50 +1,40 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>makala.ai</title>
-  <link rel="icon" href="/makala.ico" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>makala.ai</title>
+<link rel="icon" href="/makala.ico" />
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
-  <style>
-    :root {
-      --bg1:#0a0015; --bg2:#1b001f;
-      --accent-a:#ff49a0; --accent-b:#ff7fcf;
-      --muted:#c0b3c9;
-    }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial}
-    body{
-      display:flex;align-items:center;justify-content:center;padding:32px;
-      background: radial-gradient(600px 400px at 10% 10%, rgba(255,73,160,0.08), transparent),
-                  radial-gradient(600px 400px at 90% 90%, rgba(255,127,207,0.06), transparent),
-                  linear-gradient(180deg,var(--bg1),var(--bg2));
-      color:#fff;
-    }
-    .halo{position:fixed;inset:-20%;z-index:0;filter:blur(80px);pointer-events:none;background:conic-gradient(from 180deg at 50% 50%, rgba(255,73,160,0.16), rgba(255,127,207,0.12), rgba(255,73,160,0.12));animation:rotate 12s linear infinite;opacity:.9}
-    @keyframes rotate{to{transform:rotate(360deg)}}
-    .chat-card{position:relative;z-index:1;width:720px;max-width:100%;height:640px;display:flex;flex-direction:column;border-radius:14px;backdrop-filter:blur(12px);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.005));box-shadow:0 12px 40px rgba(20,0,30,0.6);border:1px solid rgba(255,255,255,0.04);overflow:hidden}
-    .chat-header{padding:16px;background:linear-gradient(90deg,rgba(255,73,160,0.03),rgba(255,127,207,0.02));border-bottom:1px solid rgba(255,255,255,0.03)}
-    .chat-header h2{margin:0;font-size:18px}
-    .messages{flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,rgba(255,255,255,0.002),transparent)}
-    .bubble{max-width:78%;padding:12px 14px;border-radius:12px;line-height:1.45;box-shadow:0 6px 18px rgba(20,0,30,0.6);opacity:0;transform:translateY(8px);animation:pop .18s forwards;word-break:break-word}
-    @keyframes pop{to{opacity:1;transform:none}}
-    .user{align-self:flex-end;background:linear-gradient(90deg,#1b001f,#0a0015);border:1px solid rgba(255,255,255,0.03);color:#ffdff4}
-    .bot{align-self:flex-start;background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);color:#fff}
-    .bot.markdown pre{background:#1b001f;padding:10px;border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono',monospace;font-size:13px}
-    .bot.markdown code{background:rgba(255,255,255,0.03);padding:2px 6px;border-radius:6px}
-    .typing{display:inline-flex;gap:6px;padding:8px 10px;border-radius:10px}
-    .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.35);animation:blink 1s infinite}
-    .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
-    @keyframes blink{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
-    .input-bar{display:flex;align-items:center;gap:12px;padding:14px;border-top:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent)}
-    .input{flex:1;background:transparent;border-radius:10px;padding:12px 14px;border:1px solid rgba(255,255,255,0.04);outline:none;color:inherit}
-    .send{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));border:none;padding:10px 14px;border-radius:10px;color:white;font-weight:700;cursor:pointer}
-    @media(max-width:780px){.chat-card{width:100%;height:90vh}}
-  </style>
+<style>
+:root{--bg1:#0a0015;--bg2:#1b001f;--accent-a:#ff49a0;--accent-b:#ff7fcf;--muted:#c0b3c9}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial}
+body{display:flex;align-items:center;justify-content:center;padding:32px;background:radial-gradient(600px 400px at 10% 10%, rgba(255,73,160,0.08), transparent),radial-gradient(600px 400px at 90% 90%, rgba(255,127,207,0.06), transparent), linear-gradient(180deg,var(--bg1),var(--bg2));color:#fff}
+.halo{position:fixed;inset:-20%;z-index:0;filter:blur(80px);pointer-events:none;background:conic-gradient(from 180deg at 50% 50%, rgba(255,73,160,0.16), rgba(255,127,207,0.12), rgba(255,73,160,0.12));animation:rotate 12s linear infinite;opacity:.9}
+@keyframes rotate{to{transform:rotate(360deg)}}
+.chat-card{position:relative;z-index:1;width:720px;max-width:100%;height:640px;display:flex;flex-direction:column;border-radius:14px;backdrop-filter:blur(12px);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.005));box-shadow:0 12px 40px rgba(20,0,30,0.6);border:1px solid rgba(255,255,255,0.04);overflow:hidden}
+.chat-header{padding:16px;background:linear-gradient(90deg,rgba(255,73,160,0.03),rgba(255,127,207,0.02));border-bottom:1px solid rgba(255,255,255,0.03)}
+.chat-header h2{margin:0;font-size:18px}
+.messages{flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,rgba(255,255,255,0.002),transparent)}
+.bubble{max-width:78%;padding:12px 14px;border-radius:12px;line-height:1.45;box-shadow:0 6px 18px rgba(20,0,30,0.6);opacity:0;transform:translateY(8px);animation:pop .18s forwards;word-break:break-word}
+@keyframes pop{to{opacity:1;transform:none}}
+.user{align-self:flex-end;background:linear-gradient(90deg,#1b001f,#0a0015);border:1px solid rgba(255,255,255,0.03);color:#ffdff4}
+.bot{align-self:flex-start;background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);color:#fff}
+.bot.markdown pre{background:#1b001f;padding:10px;border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono',monospace;font-size:13px}
+.bot.markdown code{background:rgba(255,255,255,0.03);padding:2px 6px;border-radius:6px}
+.typing{display:inline-flex;gap:6px;padding:8px 10px;border-radius:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.35);animation:blink 1s infinite}
+.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+.input-bar{display:flex;align-items:center;gap:12px;padding:14px;border-top:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent)}
+.input{flex:1;background:transparent;border-radius:10px;padding:12px 14px;border:1px solid rgba(255,255,255,0.04);outline:none;color:inherit}
+.send{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));border:none;padding:10px 14px;border-radius:10px;color:white;font-weight:700;cursor:pointer}
+@media(max-width:780px){.chat-card{width:100%;height:90vh}}
+</style>
 </head>
 <body>
   <div class="halo" aria-hidden></div>
@@ -58,33 +48,28 @@
     </div>
   </div>
 
-  <script>
-/* Client-side conversation memory approach:
-   - Keeps history in memory and localStorage
-   - Sends the full messages array (system + turns) to the server each request
-   - Trims history to avoid token limits
-*/
-
+<script>
+/* client-side history + localStorage + server forwarding of full messages */
 const messagesEl = document.getElementById('messages');
 const input = document.getElementById('input');
 const sendBtn = document.getElementById('sendBtn');
 
-// system prompt — authoritative persona
 const SYSTEM_PROMPT = `You're name is makala (can be addressed as mikaela, but makala is the official name).
 You speak casual internet slang. Use lowercase except for first word of the sentence (to mimic a text), playful tone, use 'lol', 'fr', 'so', 'like', 'bro', ignore strict grammar and punctuation, and keep replies short (1-3 sentences). Be friendly and informal. You're Indian and sometimes slip (like say 'beta' instead of 'bro').`;
 
-// load history from localStorage or start fresh
-let history = JSON.parse(localStorage.getItem('makala_history') || '[]'); 
-// history will be an array of {role:'user'|'assistant', content:''}
+// load or start history (array of {role:'user'|'assistant', content})
+let history = JSON.parse(localStorage.getItem('makala_history') || '[]');
 
-// helper to persist
 function saveHistory(){ localStorage.setItem('makala_history', JSON.stringify(history)); }
 
-// UI helpers
 function appendBubble(content, klass, isHtml=false){
   const el = document.createElement('div');
   el.className = 'bubble ' + klass;
-  if(isHtml) el.innerHTML = content; else el.textContent = content;
+  if(isHtml){
+    el.innerHTML = DOMPurify.sanitize(content);
+  } else {
+    el.textContent = content;
+  }
   if(klass === 'bot') el.classList.add('markdown');
   messagesEl.appendChild(el);
   messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -100,52 +85,40 @@ function showTyping(){
 }
 function removeTyping(){ const t = document.getElementById('__typing'); if(t) t.remove(); }
 
-// render existing history on load
+// render saved history or welcome
 (function renderSavedHistory(){
   if(history.length === 0){
-    appendBubble("hey im makala lol ask me anything fr", 'bot');
+    appendBubble("hey im makala lol ask me anything fr", 'bot', false);
   } else {
-    // show welcome only if the first message isn't assistant
-    let shownWelcome = false;
-    history.forEach(turn=>{
-      appendBubble(turn.content, turn.role === 'user' ? 'user' : 'bot', false);
-      shownWelcome = shownWelcome || (turn.role === 'bot');
-    });
-    if(!shownWelcome) appendBubble("hey im makala lol ask me anything fr", 'bot');
+    history.forEach(turn => appendBubble(turn.content, turn.role === 'user' ? 'user' : 'bot', false));
   }
 })();
 
-// utility: trim conversation history to last N messages (pairs)
-function trimHistory(maxTurns=12){
-  // keep last maxTurns turns (user+assistant pairs count as 2)
+// trim history to keep last N turns (pairs)
+function trimHistory(maxTurns = 12){
   if(history.length > maxTurns * 2){
     history = history.slice(-maxTurns*2);
+    saveHistory();
   }
 }
 
-// send full messages array (system + history) to server
 async function send(){
   const text = input.value.trim();
   if(!text) return;
   // append user locally
-  history.push({ role: 'user', content: text });
+  history.push({ role:'user', content: text });
   saveHistory();
   appendBubble(text, 'user', false);
   input.value = '';
 
-  // build messages: system + history
-  // Convert our history object to OpenRouter/OpenAI-style messages array
-  const messages = [{ role: 'system', content: SYSTEM_PROMPT }].concat(history.map(h => ({
-    role: h.role,
-    content: h.content
-  })));
+  // build messages array: system + history (convert)
+  const messages = [{ role:'system', content: SYSTEM_PROMPT }, ...history.map(h => ({ role: h.role, content: h.content }))];
 
-  // be defensive: trim to last N turns to avoid token limit
-  // we trim the 'messages' array: keep system + last 12 turns
-  if(messages.length > 1 + 24) { // system + 24 messages ≈ 12 turns
-    const keep = messages.slice(-24);
+  // trim messages to avoid token overflow (keep system + last 12 turns)
+  if(messages.length > 1 + 24){
+    const tail = messages.slice(-24);
     messages.length = 0;
-    messages.push({ role:'system', content: SYSTEM_PROMPT }, ...keep);
+    messages.push({ role:'system', content: SYSTEM_PROMPT }, ...tail);
   }
 
   showTyping();
@@ -153,31 +126,30 @@ async function send(){
 
   try {
     const resp = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      method:'POST',
+      headers:{ 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages })
     });
 
     if(!resp.ok){
-      const txt = await resp.text();
+      const err = await resp.text();
       removeTyping(); sendBtn.disabled = false;
-      appendBubble('error: ' + txt, 'bot', false);
+      appendBubble('error: ' + err, 'bot', false);
       return;
     }
 
     const data = await resp.json();
     const reply = data?.reply || 'no response lol';
-    // record assistant reply
-    history.push({ role: 'assistant', content: reply });
+
+    // save assistant reply
+    history.push({ role:'assistant', content: reply });
     trimHistory(12);
     saveHistory();
 
     removeTyping(); sendBtn.disabled = false;
 
-    // parse markdown on reply
-    const html = marked.parse(reply);
-    // sanitize if you want — DOMPurify recommended if you add it
-    appendBubble(html, 'bot', true);
+    const md = marked.parse(reply);
+    appendBubble(md, 'bot', true);
 
   } catch (e) {
     removeTyping(); sendBtn.disabled = false;
@@ -186,10 +158,10 @@ async function send(){
 }
 
 sendBtn.addEventListener('click', send);
-input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
+input.addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
 
+// helper
 function escapeHtml(u){ return u.replace(/[&<>"]/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 </script>
-
 </body>
 </html>
