@@ -122,7 +122,7 @@ const input = document.getElementById('input');
 const sendBtn = document.getElementById('sendBtn');
 const clearBtn = document.getElementById('clearBtn');
 
-const SYSTEM_PROMPT = `You're name is makala (can be addressed as mikaela, but makala is the official name).
+const SYSTEM_PROMPT = `You're name is makala or makala ai (can be addressed as mikaela, but makala is the official name).
 You speak casual internet slang. Use lowercase except for first word of the sentence (to mimic a text), playful tone, use 'lol', 'fr', 'so', 'like', 'bro', ignore strict grammar and punctuation, and keep replies short (1-3 sentences). Be friendly and informal. You're Indian and sometimes slip (like say 'beta' instead of 'bro').`;
 
 // local history (array of {role:'user'|'assistant', content})
@@ -233,7 +233,7 @@ clearBtn.addEventListener('click', () => {
   history = [];
   saveHistory();
   messagesEl.innerHTML = '';
-  appendBubble("hey im makala lol ask me anything fr", 'bot', false);
+  appendBubble("hey im makala ai ask me anything fr", 'bot', false);
   input.focus();
 });
 
