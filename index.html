@@ -59,86 +59,137 @@
   </div>
 
   <script>
-    // front-end: marked + DOMPurify are loaded via CDN above
-    const messages = document.getElementById('messages');
-    const input = document.getElementById('input');
-    const sendBtn = document.getElementById('sendBtn');
+/* Client-side conversation memory approach:
+   - Keeps history in memory and localStorage
+   - Sends the full messages array (system + turns) to the server each request
+   - Trims history to avoid token limits
+*/
 
-    function appendBubble(content, klass, isHtml=false){
-      const el = document.createElement('div');
-      el.className = 'bubble ' + klass;
-      if(isHtml){
-        // sanitize parsed markdown HTML
-        el.innerHTML = DOMPurify.sanitize(content);
-      } else {
-        el.textContent = content;
-      }
-      if(klass === 'bot') el.classList.add('markdown');
-      messages.appendChild(el);
-      messages.scrollTop = messages.scrollHeight;
-    }
+const messagesEl = document.getElementById('messages');
+const input = document.getElementById('input');
+const sendBtn = document.getElementById('sendBtn');
 
-    function showTyping(){
-      const t = document.createElement('div');
-      t.className = 'bubble bot typing';
-      t.id = '__typing';
-      t.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
-      messages.appendChild(t);
-      messages.scrollTop = messages.scrollHeight;
-    }
+// system prompt — authoritative persona
+const SYSTEM_PROMPT = `You're name is makala (can be addressed as mikaela, but makala is the official name).
+You speak casual internet slang. Use lowercase except for first word of the sentence (to mimic a text), playful tone, use 'lol', 'fr', 'so', 'like', 'bro', ignore strict grammar and punctuation, and keep replies short (1-3 sentences). Be friendly and informal. You're Indian and sometimes slip (like say 'beta' instead of 'bro').`;
 
-    function removeTyping(){
-      const t = document.getElementById('__typing');
-      if(t) t.remove();
-    }
+// load history from localStorage or start fresh
+let history = JSON.parse(localStorage.getItem('makala_history') || '[]'); 
+// history will be an array of {role:'user'|'assistant', content:''}
 
-    async function send(){
-      const text = input.value.trim();
-      if(!text) return;
-      appendBubble(escapeHtml(text), 'user', false);
-      input.value = '';
-      showTyping();
-      sendBtn.disabled = true;
+// helper to persist
+function saveHistory(){ localStorage.setItem('makala_history', JSON.stringify(history)); }
 
-      try {
-        const resp = await fetch('/api/chat', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ message: text })
-        });
+// UI helpers
+function appendBubble(content, klass, isHtml=false){
+  const el = document.createElement('div');
+  el.className = 'bubble ' + klass;
+  if(isHtml) el.innerHTML = content; else el.textContent = content;
+  if(klass === 'bot') el.classList.add('markdown');
+  messagesEl.appendChild(el);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
 
-        if (!resp.ok) {
-          const err = await resp.text();
-          removeTyping();
-          sendBtn.disabled = false;
-          appendBubble('error: ' + err, 'bot', false);
-          return;
-        }
+function showTyping(){
+  const t = document.createElement('div');
+  t.className = 'bubble bot typing';
+  t.id = '__typing';
+  t.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+  messagesEl.appendChild(t);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+function removeTyping(){ const t = document.getElementById('__typing'); if(t) t.remove(); }
 
-        const data = await resp.json();
-        removeTyping();
-        sendBtn.disabled = false;
+// render existing history on load
+(function renderSavedHistory(){
+  if(history.length === 0){
+    appendBubble("hey im makala lol ask me anything fr", 'bot');
+  } else {
+    // show welcome only if the first message isn't assistant
+    let shownWelcome = false;
+    history.forEach(turn=>{
+      appendBubble(turn.content, turn.role === 'user' ? 'user' : 'bot', false);
+      shownWelcome = shownWelcome || (turn.role === 'bot');
+    });
+    if(!shownWelcome) appendBubble("hey im makala lol ask me anything fr", 'bot');
+  }
+})();
 
-        const md = data?.reply || 'no response lol';
-        const html = marked.parse(md);
-        appendBubble(html, 'bot', true);
+// utility: trim conversation history to last N messages (pairs)
+function trimHistory(maxTurns=12){
+  // keep last maxTurns turns (user+assistant pairs count as 2)
+  if(history.length > maxTurns * 2){
+    history = history.slice(-maxTurns*2);
+  }
+}
 
-      } catch (e) {
-        removeTyping();
-        sendBtn.disabled = false;
-        appendBubble('network error lol', 'bot', false);
-      }
-    }
+// send full messages array (system + history) to server
+async function send(){
+  const text = input.value.trim();
+  if(!text) return;
+  // append user locally
+  history.push({ role: 'user', content: text });
+  saveHistory();
+  appendBubble(text, 'user', false);
+  input.value = '';
 
-    sendBtn.addEventListener('click', send);
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  // build messages: system + history
+  // Convert our history object to OpenRouter/OpenAI-style messages array
+  const messages = [{ role: 'system', content: SYSTEM_PROMPT }].concat(history.map(h => ({
+    role: h.role,
+    content: h.content
+  })));
+
+  // be defensive: trim to last N turns to avoid token limit
+  // we trim the 'messages' array: keep system + last 12 turns
+  if(messages.length > 1 + 24) { // system + 24 messages ≈ 12 turns
+    const keep = messages.slice(-24);
+    messages.length = 0;
+    messages.push({ role:'system', content: SYSTEM_PROMPT }, ...keep);
+  }
+
+  showTyping();
+  sendBtn.disabled = true;
+
+  try {
+    const resp = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ messages })
     });
 
-    function escapeHtml(u){ return u.replace(/[&<>"]/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+    if(!resp.ok){
+      const txt = await resp.text();
+      removeTyping(); sendBtn.disabled = false;
+      appendBubble('error: ' + txt, 'bot', false);
+      return;
+    }
 
-    // single welcome message controlled by front-end
-    appendBubble("hey im makala, ask me anything fr", 'bot', false);
-  </script>
+    const data = await resp.json();
+    const reply = data?.reply || 'no response lol';
+    // record assistant reply
+    history.push({ role: 'assistant', content: reply });
+    trimHistory(12);
+    saveHistory();
+
+    removeTyping(); sendBtn.disabled = false;
+
+    // parse markdown on reply
+    const html = marked.parse(reply);
+    // sanitize if you want — DOMPurify recommended if you add it
+    appendBubble(html, 'bot', true);
+
+  } catch (e) {
+    removeTyping(); sendBtn.disabled = false;
+    appendBubble('network error lol', 'bot', false);
+  }
+}
+
+sendBtn.addEventListener('click', send);
+input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
+
+function escapeHtml(u){ return u.replace(/[&<>"]/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+</script>
+
 </body>
 </html>
