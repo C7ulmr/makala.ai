@@ -1,99 +1,76 @@
 // server.cjs
 const express = require('express');
-const fetch = globalThis.fetch || require('node-fetch');
 const path = require('path');
+const fetch = globalThis.fetch || require('node-fetch'); // node 18+ has fetch
+
 const app = express();
-
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public'))); // static assets (index.html, images, etc)
 
-// Environment variables
-const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || null;
-const OPENAI_KEY = process.env.OPENAI_API_KEY || null;
-const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || null;
-const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini'; // fallback
+// Serve static files from ./public
+app.use(express.static(path.join(__dirname, 'public')));
 
-if(!OPENROUTER_KEY && !OPENAI_KEY){
-  console.warn('Warning: No OPENROUTER_API_KEY or OPENAI_API_KEY set. Server will fail to call APIs.');
-}
+// Simple health
+app.get('/health', (req, res) => res.send('ok'));
 
-// helper: send to chosen API
-async function callModelAPI(payload){
-  if(OPENROUTER_KEY){
-    // OpenRouter endpoint (common official path)
-    const url = 'https://api.openrouter.ai/v1/chat/completions';
-    const resp = await fetch(url, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${OPENROUTER_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await resp.json();
-    return data;
-  } else {
-    // OpenAI fallback
-    const url = 'https://api.openai.com/v1/chat/completions';
-    const resp = await fetch(url, {
-      method:'POST',
-      headers: { 'Authorization': `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await resp.json();
-    return data;
-  }
-}
-
-// Endpoint: /api/chat
+// Proxy to model APIs (example)
+// POST /api/chat  { messages: [...] , model: '...' }
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages, model } = req.body;
-    if(!messages) return res.status(400).send('Missing messages');
+    if (!messages) return res.status(400).send('Missing messages');
 
-    const chosenModel = model || (OPENROUTER_KEY ? OPENROUTER_MODEL : OPENAI_MODEL);
+    // Choose API based on env vars (OpenRouter preferred)
+    const OR_KEY = process.env.OPENROUTER_API_KEY;
+    const OA_KEY = process.env.OPENAI_API_KEY;
+    const chosenModel = model || process.env.OPENROUTER_MODEL || process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
-    const payload = {
-      model: chosenModel,
-      messages: messages,
-      temperature: 0.3,
-      max_tokens: 800
-    };
-
-    const data = await callModelAPI(payload);
-    // extract assistant reply safely
-    const reply = (data && data.choices && data.choices[0] && (data.choices[0].message?.content || data.choices[0].text)) || null;
-    res.json({ reply, raw: data });
-  } catch(err){
-    console.error(err);
-    res.status(500).send(String(err));
-  }
-});
-
-// Endpoint: /api/title (short title generation)
-app.post('/api/title', async (req, res) => {
-  try {
-    const { messages, model } = req.body;
-    const chosenModel = model || (OPENROUTER_KEY ? OPENROUTER_MODEL : OPENAI_MODEL);
-    // craft a very strict prompt to return only the title
-    const system = { role:'system', content: 'You are a title generator. Produce a short descriptive title (max 6 words) for the user conversation. Return ONLY the title.' };
-    const user = { role:'user', content: 'Please provide a short descriptive title for the following conversation.' };
-    const payloadMessages = [ system, user ];
-    // add last user message if provided
-    if(Array.isArray(messages) && messages.length){
-      // provide most recent user messages (last 3)
-      const tail = messages.slice(-6);
-      payloadMessages.push(...tail.map(m => ({ role: m.role, content: m.content })));
+    if (OR_KEY) {
+      // OpenRouter (example endpoint, adapt if your router differs)
+      const orResp = await fetch('https://api.openrouter.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OR_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ model: chosenModel, messages, temperature: 0.3, max_tokens: 800 })
+      });
+      const data = await orResp.json();
+      const reply = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || '';
+      return res.json({ reply, raw: data });
     }
 
-    const payload = { model: chosenModel, messages: payloadMessages, temperature: 0.2, max_tokens: 20 };
-    const data = await callModelAPI(payload);
-    const raw = data;
-    const reply = (data && data.choices && data.choices[0] && (data.choices[0].message?.content || data.choices[0].text)) || null;
-    res.json({ title: reply ? String(reply).split('\n')[0].trim() : null, raw });
-  } catch(err){
+    if (OA_KEY) {
+      // OpenAI fallback
+      const oaResp = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OA_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ model: chosenModel, messages, temperature: 0.3, max_tokens: 800 })
+      });
+      const data = await oaResp.json();
+      const reply = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || '';
+      return res.json({ reply, raw: data });
+    }
+
+    return res.status(500).send('No API key configured (OPENROUTER_API_KEY or OPENAI_API_KEY required)');
+  } catch (err) {
     console.error(err);
     res.status(500).send(String(err));
   }
 });
 
-// Start
+// Optional: title endpoint
+app.post('/api/title', async (req, res) => {
+  // similar proxy logic; keep simple: use /api/chat fallback or return 204
+  res.status(204).send();
+});
+
+// Fallback: serve index.html for any SPA route (so client-side routing works)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, ()=> console.log('Server running on port', PORT));
+app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
