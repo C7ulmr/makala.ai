@@ -6,208 +6,171 @@
 <title>makala.ai</title>
 <link rel="icon" href="/makala.ico" />
 
-<!-- Google font -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-<!-- Marked for Markdown + DOMPurify for safety + KaTeX for math -->
+<!-- Markdown + sanitize + KaTeX -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
 
 <style>
-  /* Basic layout, dark glass style and themes */
-  :root {
-    --bg1: #0a0015; --bg2:#1b001f;
-    --accent-a: #ff49a0; --accent-b:#ff7fcf;
-    --muted: #b9a9b7;
-    --bubble-padding: 10px 14px;
-    --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  /* layout & base */
+  :root{
+    --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+    --bg1:#0a0015; --bg2:#1b001f;
+    --accent-a:#ff49a0; --accent-b:#ff7fcf;
+    --muted:#b9a9b7;
   }
-  html,body{height:100%;margin:0;font-family:var(--font-family);}
+  html,body{height:100%;margin:0; font-family:var(--font); color:#fff; overflow-x:hidden}
   body{background:
     radial-gradient(700px 500px at 10% 10%, rgba(255,79,160,0.06), transparent),
     linear-gradient(180deg,var(--bg1),var(--bg2));
-    color:#fff;display:flex;align-items:center;justify-content:center;padding:28px;}
+    display:flex;align-items:center;justify-content:center;padding:28px;}
 
-/* Theme classes */
-body.theme-pink { --bg1:#0a0015; --bg2:#1b001f; --accent-a:#ff49a0; --accent-b:#ff7fcf; }
-body.theme-deep { --bg1:#010101; --bg2:#000000; --accent-a:#ff007f; --accent-b:#ff4fb1; }
-body.theme-soft { --bg1:#0b0710; --bg2:#1b1128; --accent-a:#b98cff; --accent-b:#8fb7ff; }
-body.theme-blue { --bg1:#041025; --bg2:#061b2f; --accent-a:#2ea6ff; --accent-b:#7ecbff; }
-body.theme-orange { --bg1:#130800; --bg2:#2a0f00; --accent-a:#ff9a3c; --accent-b:#ff5a1f; }
-body.theme-green { --bg1:#001513; --bg2:#04221b; --accent-a:#2df0a9; --accent-b:#00b38a; }
+  /* themes */
+  body.theme-pink { --bg1:#0a0015; --bg2:#1b001f; --accent-a:#ff49a0; --accent-b:#ff7fcf; }
+  body.theme-deep { --bg1:#020202; --bg2:#000000; --accent-a:#ff007f; --accent-b:#ff4fb1; }
+  body.theme-soft { --bg1:#0b0710; --bg2:#1b1128; --accent-a:#b98cff; --accent-b:#8fb7ff; }
+  body.theme-blue { --bg1:#041025; --bg2:#061b2f; --accent-a:#2ea6ff; --accent-b:#7ecbff; }
+  body.theme-orange { --bg1:#130800; --bg2:#2a0f00; --accent-a:#ff9a3c; --accent-b:#ff5a1f; }
+  body.theme-green { --bg1:#001513; --bg2:#04221b; --accent-a:#2df0a9; --accent-b:#00b38a; }
 
-/* App frame */
-.app {
-  width: 980px; max-width: calc(100% - 48px); height:720px; display:grid;
-  grid-template-columns: 240px 1fr; gap:20px;
-  align-items:start;
-}
+  /* app grid */
+  .app{ width:980px; max-width:calc(100% - 40px); height:720px; display:grid; grid-template-columns:240px 1fr; gap:18px; align-items:start; }
 
-/* sidebar - conversations */
-.sidebar {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius:12px; padding:12px; height:100%;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.6); backdrop-filter: blur(8px); border:1px solid rgba(255,255,255,0.03);
-  display:flex; flex-direction:column;
-}
-.sidebar header { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-.sidebar .new-btn{ margin-left:auto; background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.04); padding:6px 8px; border-radius:8px; cursor:pointer;}
-.conv-list { flex:1; overflow:auto; display:flex; flex-direction:column; gap:8px; padding-right:6px; }
-.conv { display:flex; align-items:center; gap:8px; padding:8px; border-radius:10px; cursor:pointer; transition:background .12s; }
-.conv.active { background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
-.conv .title { flex:1; font-size:14px; color:#fff; }
-.conv .meta { font-size:12px; color:var(--muted); }
+  /* sidebar */
+  .sidebar{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; padding:12px; height:100%;
+    box-shadow:0 12px 30px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.03); display:flex;flex-direction:column; }
+  .sidebar header{display:flex;align-items:center; gap:8px; margin-bottom:8px}
+  .sidebar .new-btn{ margin-left:auto; background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.04); padding:6px 8px; border-radius:8px; cursor:pointer; transition:all .14s }
+  .sidebar .new-btn:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(0,0,0,0.4) }
 
-/* three-dot menu delete */
-.conv .dots { opacity:.7; padding:6px; border-radius:6px; }
-.conv .dots:hover { background:rgba(255,255,255,0.02); opacity:1; }
+  .conv-list { flex:1; overflow:auto; display:flex; flex-direction:column; gap:8px; padding-right:6px; }
+  .conv { display:flex; align-items:center; gap:8px; padding:8px; border-radius:10px; cursor:pointer; transition:background .12s; color:var(--muted); }
+  .conv.active { background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); color:#fff }
+  .conv .title { font-size:14px; color:inherit }
+  .conv .meta { font-size:12px; color:var(--muted) }
+  .conv .dots { margin-left:auto; padding:6px; border-radius:6px; color:var(--muted) }
 
-/* main chat panel */
-.panel {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius:12px; padding:12px; height:100%; display:flex; flex-direction:column;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.03);
-}
+  /* main panel */
+  .panel{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; padding:12px; height:100%; display:flex; flex-direction:column;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.03); overflow:hidden; }
 
-/* header row with title and settings */
-.panel .header { display:flex; align-items:center; gap:12px; padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.03) }
-.brand { display:flex; align-items:center; gap:10px; }
-.brand img { width:36px; height:36px; border-radius:8px; }
-.brand h1 { margin:0; font-size:16px; font-weight:600; }
-.header-right { margin-left:auto; display:flex; gap:8px; align-items:center; }
+  .header{ display:flex; align-items:center; gap:12px; padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.03) }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand img{ width:28px;height:28px;border-radius:6px }
+  .brand h1{ margin:0; font-size:16px; font-weight:600; color:#fff }
 
-/* messages area */
-.messages-wrap { flex:1; overflow:auto; padding:14px; display:flex; flex-direction:column; gap:12px; }
+  .header-right{ margin-left:auto; display:flex; gap:8px; align-items:center }
 
-/* Bot message card (no bubble) */
-.bot-card {
-  display:flex; gap:10px; align-items:flex-start;
-  max-width:78%;
-}
-.bot-card .meta {
-  display:flex; align-items:center; gap:8px; font-size:13px;
-  margin-bottom:6px;
-}
-.bot-card .meta img{ width:20px; height:20px; border-radius:6px; }
-.bot-card .body {
-  background: var(--bot-bg, rgba(255,255,255,0.03));
-  padding:10px 12px;
-  border-radius:10px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.5);
-  color: #fff;
-  line-height:1.35;
-  white-space: pre-wrap;
-  font-size:14px;
-  position:relative;
-  overflow:hidden;
-}
+  /* messages area */
+  .messages-wrap{ flex:1; overflow:auto; padding:14px; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth; overflow-x:hidden; }
 
-/* Make markdown blocks inside bot body inline-block to avoid extra vertical gaps */
-.bot-card .body .markdown-block { display:inline-block; width:100%; margin:0; padding:0; vertical-align:top; }
+  /* BOT: card with small logo + label (no big picture on the left) */
+  .bot-card { display:flex; flex-direction:column; gap:6px; max-width:78%; }
+  .bot-meta { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:13px; }
+  .bot-meta img{ width:20px; height:20px; border-radius:6px; }
+  .bot-body { background: var(--bot-bg, rgba(255,255,255,0.03)); padding:10px 12px; border-radius:10px; color:#fff; box-shadow:0 6px 18px rgba(0,0,0,0.5);
+    white-space:pre-wrap; line-height:1.35; font-size:14px; position:relative; overflow:hidden; word-break:break-word; }
 
-/* Copy icon for bot (always visible) */
-.copy-btn { position:absolute; right:8px; top:8px; width:20px; height:20px; opacity:0.95; cursor:pointer; }
+  /* Make markdown blocks inline so there are no extra margins/gaps */
+  .bot-body .markdown-block { display:inline-block; width:100%; margin:0; padding:0; vertical-align:top; white-space:pre-wrap; }
 
-/* user bubble (right) */
-.row-user { display:flex; justify-content:flex-end; }
-.user-bubble {
-  background: linear-gradient(90deg,var(--user-a,#200023),var(--user-b,#0b0012));
-  color: #ffdff4;
-  padding: var(--bubble-padding);
-  border-radius: 14px 14px 6px 14px;
-  max-width: 40%; min-width: 60px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.6);
-  position:relative;
-  white-space: pre-wrap;
-  line-height:1.25;
-  font-size:14px;
-  transition:transform .18s, opacity .18s;
-}
-/* copy button for user appears on hover */
-.user-bubble .copy-user{ position:absolute; right:-36px; top:6px; width:26px; height:26px; opacity:0; transition:opacity .18s; cursor:pointer; }
-.row-user:hover .user-bubble .copy-user{ opacity:1; transform:translateX(0); }
+  /* copy button for bot (always visible) */
+  .bot-body .copy-btn { position:absolute; right:8px; top:8px; width:22px; height:22px; opacity:0.95; cursor:pointer; }
 
-/* user bubble entrance animation */
-.user-appear {
-  animation: flyIn .36s cubic-bezier(.2,.9,.27,1);
-}
-@keyframes flyIn {
-  0%{ opacity:0; transform: translateY(8px) translateX(30px) scale(.985) }
-  60%{ opacity:1; transform: translateY(-4px) translateX(-6px) scale(1.02) }
-  100%{ opacity:1; transform:none }
-}
+  /* user bubble (right) */
+  .row-user { display:flex; justify-content:flex-end; }
+  .user-bubble {
+    background: linear-gradient(90deg,#200023,#0b0012);
+    color:#ffdff4;
+    padding:10px 14px;
+    border-radius:14px 14px 6px 14px;
+    max-width:46%;
+    min-width:80px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.6);
+    position:relative;
+    white-space:pre-wrap;
+    line-height:1.25;
+    font-size:14px;
+    overflow-wrap: break-word;
+  }
+  .user-bubble .copy-user{ position:absolute; right:-36px; top:6px; width:26px; height:26px; opacity:0; transition:opacity .18s; cursor:pointer; }
+  .row-user:hover .user-bubble .copy-user{ opacity:1 }
 
-/* bot character-by-character fade */
-.bot-char { display:inline-block; opacity:0; transform: translateY(4px); animation: charIn .06s forwards; }
-@keyframes charIn { to{ opacity:1; transform:none } }
+  /* user appear animation */
+  .user-appear { animation: flyIn .36s cubic-bezier(.2,.9,.27,1); }
+  @keyframes flyIn {
+    0%{ opacity:0; transform: translateY(12px) translateX(40px) scale(.98) }
+    60%{ opacity:1; transform: translateY(-4px) translateX(-6px) scale(1.02) }
+    100%{ opacity:1; transform:none }
+  }
 
-/* input area — textarea with embedded circular send button */
-.input-area { display:flex; align-items:center; gap:10px; padding:12px; border-top:1px solid rgba(255,255,255,0.035) }
-.input-wrap { position:relative; flex:1; }
-textarea.input { width:100%; min-height:44px; max-height:200px; resize:none; padding:12px 56px 12px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:inherit; font-size:14px; line-height:1.25; }
-.send-circle {
-  position:absolute; right:8px; top:50%; transform:translateY(-50%);
-  width:44px; height:44px; border-radius:100px; display:flex; align-items:center; justify-content:center;
-  background:linear-gradient(90deg,var(--accent-a),var(--accent-b)); border:none; cursor:pointer; box-shadow:0 10px 26px rgba(0,0,0,0.5);
-  display:none; /* shown only when text exists */
-}
+  /* bot typing & progressive char reveal */
+  .bot-char { display:inline-block; opacity:0; transform:translateY(4px); animation: charIn .06s forwards; }
+  @keyframes charIn { to{ opacity:1; transform:none } }
 
-/* show send button when .ready is added to wrapper */
-.input-wrap.ready .send-circle { display:flex; }
+  /* input area */
+  .input-area{ padding:12px; border-top:1px solid rgba(255,255,255,0.03); display:flex; align-items:center; gap:10px; }
+  .input-wrap{ position:relative; flex:1; }
+  textarea.input{ width:100%; min-height:44px; max-height:200px; resizE:none; padding:12px 56px 12px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.04);
+    background:transparent; color:#fff; font-size:14px; line-height:1.25; box-shadow:none; transition:box-shadow .14s, transform .12s; overflow-wrap:break-word; white-space:pre-wrap; }
+  textarea.input:focus{ box-shadow:0 12px 28px rgba(0,0,0,0.5); transform:translateY(-1px) }
 
-/* theme picker & settings */
-.footer { display:flex; gap:12px; align-items:center; justify-content:flex-end; padding-top:8px; font-size:12px; color:var(--muted); }
-.theme-select { border-radius:10px; padding:8px 10px; border:1px solid rgba(255,255,255,0.04); background:rgba(0,0,0,0.24); color:#fff; }
-.settings-panel { position: absolute; right: 18px; top: 18px; z-index:30; }
+  .send-circle { position:absolute; right:8px; top:50%; transform:translateY(-50%); width:44px; height:44px; border-radius:100px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(90deg,var(--accent-a),var(--accent-b)); border:none; cursor:pointer; box-shadow:0 10px 26px rgba(0,0,0,0.5); display:none; transition:transform .12s; }
+  .input-wrap.ready .send-circle { display:flex; }
+  .send-circle:hover{ transform: translateY(-50%) scale(1.03) }
 
-/* small powered tag */
-.powered { font-size:11px; color:var(--muted); margin-left:8px; }
+  /* code blocks and copy */
+  pre.code-block{ position:relative; background:#0b0b10; padding:10px; border-radius:8px; overflow:auto; margin:8px 0; font-family:ui-monospace, Menlo, Monaco, 'Roboto Mono', monospace; font-size:13px; color:#e6edf3; white-space:pre-wrap; word-break:break-word; max-width:100% }
+  .copy-code{ position:absolute; right:8px; top:8px; width:26px; height:26px; cursor:pointer; border-radius:6px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; }
 
-/* small responsive */
-@media (max-width:900px) {
-  .app{ grid-template-columns: 1fr; }
-  .sidebar{ order:2; height:160px; display:flex; overflow-x:auto; }
-  .panel{ order:1; height:calc(100vh - 200px); }
-  .user-bubble{ max-width:70%; }
-}
+  hr.md-rule { border:0; border-top:1px solid rgba(255,255,255,0.06); margin:8px 0; }
 
-/* code block styling and copy icon inside it */
-pre.code-block{ position:relative; background:#0b0b10; padding:10px; border-radius:8px; overflow:auto; margin:8px 0; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace; font-size:13px; color:#e6edf3; }
-.copy-code { position:absolute; right:8px; top:8px; width:26px; height:26px; cursor:pointer; border-radius:6px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; }
-hr.md-rule { border:0; border-top:1px solid rgba(255,255,255,0.06); margin:8px 0; }
+  /* selects and dropdowns dark + white text */
+  select, .theme-select { background: rgba(0,0,0,0.45); color:#fff; border-radius:10px; padding:8px 10px; border:1px solid rgba(255,255,255,0.06); }
+  select option{ background:#0b0b10; color:#fff; }
 
-/* tiny settings modal */
-.modal { position:fixed; right:18px; bottom:72px; width:320px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:12px; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.03); display:none; z-index:40; }
-.modal.show{ display:block; }
-.modal label{ display:block; font-size:13px; margin-top:8px; color:var(--muted); }
-.modal input, .modal select, .modal textarea { width:100%; padding:8px; margin-top:6px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.04); color:#fff; }
+  /* small footer */
+  .footer{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding-top:8px; color:var(--muted); font-size:12px }
 
+  /* small modal */
+  .modal { position:fixed; right:18px; bottom:72px; width:320px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:12px; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.03); display:none; z-index:40; }
+  .modal.show{ display:block; }
+  .modal input, .modal select{ width:100%; padding:8px; margin-top:6px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.04); color:#fff; }
+
+  /* responsive */
+  @media(max-width:900px){
+    .app{ grid-template-columns: 1fr; }
+    .sidebar{ order:2; height:160px; overflow:auto; }
+    .panel{ order:1; height:calc(100vh - 200px); }
+    .user-bubble{ max-width:70% }
+  }
 </style>
 </head>
 <body class="theme-pink">
   <div class="app">
-    <!-- Sidebar: conversations -->
-    <aside class="sidebar" id="sidebar">
+    <!-- Sidebar -->
+    <aside class="sidebar">
       <header>
         <strong>Conversations</strong>
         <button class="new-btn" id="newConv">New</button>
       </header>
       <div class="conv-list" id="convList"></div>
-      <div style="margin-top:8px;font-size:12px;color:var(--muted)">Tip: click a convo to open. Use three dots to delete.</div>
+      <div style="margin-top:8px;font-size:12px;color:var(--muted)">Tip: click a convo to open. Use ⋯ to delete.</div>
     </aside>
 
-    <!-- Main panel -->
+    <!-- Main -->
     <main class="panel">
       <div class="header">
         <div class="brand">
-          <img src="makala.png" alt="makala" />
+          <img src="makala.png" alt="m" />
           <h1 id="convTitle">makala.ai</h1>
         </div>
-
         <div class="header-right">
-          <button id="openSettings" title="Settings" style="background:transparent;border:0;cursor:pointer;"><img src="settings.png" alt="settings" width="20" height="20"></button>
+          <button id="openSettings" title="Settings" style="background:transparent;border:0;cursor:pointer;"><img src="settings.png" alt="settings" width="18" height="18"></button>
           <select id="themeSelect" class="theme-select" title="Theme">
             <option value="pink">purple & pink</option>
             <option value="deep">deep black</option>
@@ -223,59 +186,56 @@ hr.md-rule { border:0; border-top:1px solid rgba(255,255,255,0.06); margin:8px 0
 
       <div class="input-area">
         <div class="input-wrap" id="inputWrap">
-          <textarea id="input" class="input" placeholder="ask me anything..." rows="1"></textarea>
+          <textarea id="input" class="input" placeholder="ask me anything..." rows="1" spellcheck="false"></textarea>
           <div class="send-circle" id="sendBtn" title="Send">
             <img src="send-circle.png" alt="send" style="width:22px;height:22px">
           </div>
         </div>
       </div>
 
-      <div class="footer" style="justify-content:space-between;">
-        <div><span class="powered">powered by OpenRouter</span></div>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <div style="font-size:12px;color:var(--muted)">Model: <span id="modelName">unknown</span></div>
-        </div>
+      <div class="footer">
+        <div class="powered">powered by OpenRouter</div>
+        <div>Model: <span id="modelName">default</span></div>
       </div>
     </main>
   </div>
 
-  <!-- settings modal -->
-  <div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-hidden="true">
+  <!-- Settings modal -->
+  <div class="modal" id="settingsModal">
     <strong>Settings</strong>
-    <label>Personality</label>
-    <select id="personality">
-      <option value="makala">makala (playful)</option>
-      <option value="makala_serious">makala serious (concise)</option>
-    </select>
-
-    <label>What should I call you?</label>
-    <input id="userName" placeholder="Your name / nickname" />
-
-    <label>Model (optional)</label>
+    <label style="margin-top:8px;color:var(--muted)">Personality</label>
+    <select id="personality"><option value="makala">makala (playful)</option><option value="makala_serious">makala serious</option></select>
+    <label style="margin-top:8px;color:var(--muted)">What should I call you?</label>
+    <input id="userName" placeholder="Your name or nickname" />
+    <label style="margin-top:8px;color:var(--muted)">Model (optional)</label>
     <input id="modelInput" placeholder="openrouter model id (optional)" />
-
-    <div style="display:flex; gap:8px; margin-top:10px;">
-      <button id="saveSettings" class="btn" style="padding:8px 10px;">Save</button>
-      <button id="closeSettings" class="btn" style="padding:8px 10px;background:transparent;border:1px solid rgba(255,255,255,0.06);">Close</button>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button id="saveSettings" class="new-btn">Save</button>
+      <button id="closeSettings" class="new-btn" style="background:transparent">Close</button>
     </div>
   </div>
 
 <script>
-/* =============================================================================
-   Front-end script implementing:
-   - conversations, message storage, tabs
-   - settings (personality + nickname)
-   - markdown + KaTeX + code copy
-   - bot character typing, user bubble animations
-   - send button inside textarea, appears only when content exists
-   - title generation request (calls /api/title)
-   - note: requires server endpoints: /api/chat (existing) and /api/title (optional)
-   ============================================================================= */
+/* -------------------------
+   Helper utilities
+   ------------------------- */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
 
-/* Utilities */
-const $ = sel => document.querySelector(sel);
-const $$ = sel => Array.from(document.querySelectorAll(sel));
-function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function rtrimNewlines(s){ return String(s||'').replace(/\r/g,'').replace(/\n+$/,''); }
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* -------------------------
+   Local storage model
+   ------------------------- */
+let convs = JSON.parse(localStorage.getItem('makala_convs') || '[]');
+let activeConvId = convs[0]?.id || null;
+const settings = {
+  personality: localStorage.getItem('makala_personality') || 'makala',
+  userName: localStorage.getItem('makala_user') || '',
+  model: localStorage.getItem('makala_model') || ''
+};
 
 /* DOM refs */
 const convList = $('#convList');
@@ -295,87 +255,18 @@ const userNameEl = $('#userName');
 const modelInput = $('#modelInput');
 const modelNameEl = $('#modelName');
 
-/* Marked setup for math support (inline $...$ and $$...$$) */
-(function setupMarkedWithMath(){
-  // Simple renderer: convert $$...$$ to katex block and $...$ to katex inline
-  const origRenderer = new marked.Renderer();
-
-  // override code to wrap pre tag with class for copy button
-  origRenderer.code = function(code, infostring, escaped){
-    const lang = (infostring || '').trim();
-    return `<pre class="code-block"><code data-lang="${lang}">${escapeHtml(code)}</code></pre>`;
-  };
-
-  // Override paragraph to preserve newlines, and handle inline math
-  origRenderer.paragraph = function(text){
-    return `<p class="markdown-block">${text}</p>`;
-  };
-
-  marked.setOptions({
-    renderer: origRenderer,
-    gfm: true,
-    breaks: true,
-    smartLists: true,
-  });
-})();
-
-/* sanitize helper */
-function sanitizeHtml(html){ return DOMPurify.sanitize(html); }
-
-/* escape for raw code */
-function escapeHtml(str){
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-/* Conversation storage structure in localStorage:
-   convs: [{ id, title, created, messages: [ {role:'user'|'assistant', content, created } ] }]
-*/
-let convs = JSON.parse(localStorage.getItem('makala_convs') || '[]');
-let activeConvId = convs[0]?.id || null;
-
-/* Settings storage */
-const settings = {
-  personality: localStorage.getItem('makala_personality') || 'makala',
-  userName: localStorage.getItem('makala_user') || '',
-  model: localStorage.getItem('makala_model') || ''
-};
-
-/* init theme */
-(function initTheme(){
-  const t = localStorage.getItem('makala_theme') || 'pink';
-  document.body.className = 'theme-' + t;
-  themeSelect.value = t;
-})();
-themeSelect.addEventListener('change', (e)=>{
-  const v = e.target.value;
-  document.body.className = 'theme-' + v;
-  localStorage.setItem('makala_theme', v);
-});
-
-/* init settings UI */
+/* init UI values */
 personalityEl.value = settings.personality;
 userNameEl.value = settings.userName;
 modelInput.value = settings.model;
 modelNameEl.textContent = settings.model || 'default';
 
-/* Save settings */
-saveSettings.addEventListener('click', ()=>{
-  settings.personality = personalityEl.value;
-  settings.userName = userNameEl.value.trim();
-  settings.model = modelInput.value.trim();
-  localStorage.setItem('makala_personality', settings.personality);
-  localStorage.setItem('makala_user', settings.userName);
-  localStorage.setItem('makala_model', settings.model);
-  modelNameEl.textContent = settings.model || 'default';
-  settingsModal.classList.remove('show');
-});
-
-/* open/close settings */
-openSettings.addEventListener('click', ()=> settingsModal.classList.toggle('show'));
-closeSettings.addEventListener('click', ()=> settingsModal.classList.remove('show'));
-
-/* Conversation helpers */
+/* persist convs */
 function saveConvs(){ localStorage.setItem('makala_convs', JSON.stringify(convs)); }
+
+/* -------------------------
+   Conversation management
+   ------------------------- */
 function createConv(title){
   const c = { id: uid(), title: title || 'New conversation', created: Date.now(), messages: [] };
   convs.unshift(c);
@@ -388,31 +279,21 @@ function deleteConv(id){
   convs = convs.filter(c => c.id !== id);
   saveConvs();
   renderConvs();
-  if(convs.length) setActiveConv(convs[0].id);
-  else { createConv('makala.ai'); }
+  if(convs.length) setActiveConv(convs[0].id); else createConv('New conversation');
 }
-
-/* render conversation list */
 function renderConvs(){
   convList.innerHTML = '';
-  convs.forEach(c => {
+  convs.forEach(c=>{
     const el = document.createElement('div');
     el.className = 'conv' + (c.id === activeConvId ? ' active' : '');
     el.dataset.id = c.id;
-    el.innerHTML = `<div style="display:flex;gap:8px;align-items:center;">
-        <img src="makala.png" alt="m" style="width:28px;height:28px;border-radius:6px">
-        <div>
-          <div class="title">${escapeHtml(c.title)}</div>
-          <div class="meta">${new Date(c.created).toLocaleString()}</div>
-        </div>
-      </div>
-      <div class="dots" title="Options">⋯</div>`;
+    el.innerHTML = `<div style="display:flex;gap:8px;align-items:center">
+      <img src="makala.png" style="width:28px;height:28px;border-radius:6px" alt="m">
+      <div><div class="title">${escapeHtml(c.title)}</div><div class="meta">${new Date(c.created).toLocaleString()}</div></div>
+    </div><div class="dots">⋯</div>`;
     convList.appendChild(el);
-
-    // click to open
     el.addEventListener('click', (ev)=>{
-      if(ev.target.classList.contains('dots')){
-        // show quick menu: delete
+      if(ev.target.closest('.dots')){
         if(confirm('Delete this conversation?')) deleteConv(c.id);
         return;
       }
@@ -420,268 +301,215 @@ function renderConvs(){
     });
   });
 }
-
-/* set active conversation */
 function setActiveConv(id){
   activeConvId = id;
   renderConvs();
   renderActiveMessages();
 }
 
-/* Render messages of active conv */
+/* -------------------------
+   Message rendering
+   ------------------------- */
 function renderActiveMessages(){
   messagesWrap.innerHTML = '';
   const conv = convs.find(x=>x.id===activeConvId);
   if(!conv) return;
   convTitle.textContent = conv.title || 'makala.ai';
-
   conv.messages.forEach(m => {
     if(m.role === 'user') renderUserMessage(m);
     else renderBotMessage(m);
   });
-
-  // scroll to bottom
   messagesWrap.scrollTop = messagesWrap.scrollHeight;
 }
 
-/* Helper to render user message (with hover copy) */
+/* user message */
 function renderUserMessage(m){
   const row = document.createElement('div'); row.className = 'row-user';
   const bubble = document.createElement('div'); bubble.className = 'user-bubble user-appear';
   bubble.textContent = rtrimNewlines(m.content);
-  // copy icon
-  const copy = document.createElement('img'); copy.src = 'copy.png'; copy.className = 'copy-user'; copy.title='Copy';
-  copy.addEventListener('click', (e)=>{
-    navigator.clipboard.writeText(m.content);
-    copy.style.opacity = 0.6;
-    setTimeout(()=> copy.style.opacity = 1, 500);
-  });
+  const copy = document.createElement('img'); copy.src='copy.png'; copy.className='copy-user'; copy.title='Copy';
+  copy.addEventListener('click', ()=> navigator.clipboard.writeText(m.content));
   bubble.appendChild(copy);
-
   row.appendChild(bubble);
   messagesWrap.appendChild(row);
-
-  // animate into view
   messagesWrap.scrollTop = messagesWrap.scrollHeight;
 }
 
-/* Render bot message: no bubble — small logo + "makala ai" label above the message body */
+/* bot message — small logo + label above each message, no big left logo */
 function renderBotMessage(m){
-  const card = document.createElement('div'); card.className = 'bot-card';
-  const left = document.createElement('div'); left.style.width='36px'; left.style.flex='0 0 36px';
-  const img = document.createElement('img'); img.src = 'makala.png'; img.style.width='36px'; img.style.height='36px'; img.style.borderRadius='8px';
-  left.appendChild(img);
-
-  const right = document.createElement('div'); right.style.flex='1';
-  // meta row (logo + label)
-  const meta = document.createElement('div'); meta.className='meta';
-  const small = document.createElement('img'); small.src='makala.png'; small.style.width='20px'; small.style.height='20px'; small.style.borderRadius='6px';
-  const label = document.createElement('div'); label.textContent = 'makala ai'; label.style.fontWeight='600';
+  const cont = document.createElement('div'); cont.className = 'bot-card';
+  const meta = document.createElement('div'); meta.className = 'bot-meta';
+  const small = document.createElement('img'); small.src='makala.png'; small.alt='m';
+  const label = document.createElement('div'); label.textContent = 'makala ai'; label.style.fontWeight='600'; label.style.color='#fff';
   meta.appendChild(small); meta.appendChild(label);
-
-  // body area
-  const body = document.createElement('div'); body.className = 'body';
-  // copy button always visible
-  const copyBtn = document.createElement('img'); copyBtn.src = 'copy.png'; copyBtn.className = 'copy-btn'; copyBtn.title='Copy';
-  copyBtn.addEventListener('click', ()=> {
-    navigator.clipboard.writeText(m.content);
-    copyBtn.style.opacity = 0.6;
-    setTimeout(()=> copyBtn.style.opacity = 1, 600);
-  });
-
+  const body = document.createElement('div'); body.className = 'bot-body';
+  const copyBtn = document.createElement('img'); copyBtn.src='copy.png'; copyBtn.className='copy-btn'; copyBtn.title='Copy';
+  copyBtn.addEventListener('click', ()=> navigator.clipboard.writeText(m.content));
   body.appendChild(copyBtn);
-  right.appendChild(meta);
-  right.appendChild(body);
-  card.appendChild(left);
-  card.appendChild(right);
-  messagesWrap.appendChild(card);
-
-  // progressive character-by-character type + markdown + KaTeX
-  typeMarkdownIntoElement(m.content, body);
+  cont.appendChild(meta);
+  cont.appendChild(body);
+  messagesWrap.appendChild(cont);
+  // progressive character-by-character render with markdown + katex
+  typeMarkdownIntoElement(rtrimNewlines(m.content), body);
   messagesWrap.scrollTop = messagesWrap.scrollHeight;
 }
 
-/* rtrim helper (remove trailing newlines only) */
-function rtrimNewlines(s){ return String(s || '').replace(/\r/g,'').replace(/\n+$/,''); }
-
-/* Typewriter for markdown:
-   - gradually reveals characters
-   - on each step, parse markdown (marked) for current substring,
-     then sanitize and render. After render, run KaTeX render for inline/block math.
-   - This is less efficient but gives the desired effect.
-*/
-async function typeMarkdownIntoElement(raw, container){
-  const text = rtrimNewlines(raw);
-  container.dataset.raw = text;
-  container.innerHTML = ''; // clear
-  // We'll reveal char-by-char. But to keep markup stable, we incrementally reveal the raw markdown
-  // and parse it with marked each time, using DOMPurify before inserting.
-  for(let i=0;i<=text.length;i++){
-    const sub = text.slice(0,i);
-    const md = marked.parse(sub);
-    container.innerHTML = DOMPurify.sanitize(md);
-    // process math: find $...$ and $$...$$ already from marked; use KaTeX to render inline and display formulas
-    renderMathInElement(container);
-    // run code block copy button insertion
-    attachCodeCopyButtons(container);
-    // small per-character delay — speed proportional to character
-    await new Promise(r => setTimeout(r, Math.max(8, Math.min(28, 200/(text.length>200?2:1)))));
-    // scroll bottom
-    messagesWrap.scrollTop = messagesWrap.scrollHeight;
-  }
-
-  // final sanitize + math render once more
-  container.innerHTML = DOMPurify.sanitize(marked.parse(text));
-  renderMathInElement(container);
-  attachCodeCopyButtons(container);
-}
-
-/* Math rendering helper using KaTeX:
-   We'll scan for inline $...$ and block $$...$$ and replace them with spans KaTeX can render into.
-   This approach is simple: after HTML is inserted, find text nodes containing \( or $ and render them with katex.
-*/
-function renderMathInElement(el){
-  // Using katex.render is synchronous; we attempt to find $$...$$ first for display math
-  // We'll do a regex on innerHTML: replace $$...$$ with a placeholder and render into a span
-  // Safer approach: find elements containing $..$ text nodes - simplified method below.
-  // Note: This is a pragmatic approach for most cases.
-  // Render display math: $$...$$
-  const html = el.innerHTML;
-  // Replace $$...$$ with spans with data-math-display
-  el.innerHTML = html.replace(/\$\$([^$]+)\$\$/g, function(_, expr){
-    const out = `<span class="katex-display" data-katex="${encodeURIComponent(expr)}"></span>`;
-    return out;
-  });
-  // Replace inline math $...$
-  el.innerHTML = el.innerHTML.replace(/\$([^$]+)\$/g, function(_, expr){
-    const out = `<span class="katex-inline" data-katex="${encodeURIComponent(expr)}"></span>`;
-    return out;
-  });
-  // Now render all created katex spans
-  const inlineEls = el.querySelectorAll('[data-katex]');
-  inlineEls.forEach(node => {
-    const expr = decodeURIComponent(node.getAttribute('data-katex'));
-    try {
-      katex.render(expr, node, { throwOnError: false, displayMode: node.classList.contains('katex-display') });
-    } catch(e){
-      node.textContent = expr;
-    }
-    node.removeAttribute('data-katex');
-  });
-}
-
-/* Attach copy buttons to code blocks (only if not already attached) */
+/* -------------------------
+   Progressive markdown typing + math + code copy
+   ------------------------- */
 function attachCodeCopyButtons(container){
   const pres = container.querySelectorAll('pre.code-block');
-  pres.forEach(pre => {
+  pres.forEach(pre=>{
     if(pre.querySelector('.copy-code')) return;
-    const btn = document.createElement('div');
-    btn.className = 'copy-code';
-    btn.title = 'Copy code';
+    const btn = document.createElement('div'); btn.className='copy-code'; btn.title='Copy';
     btn.innerHTML = `<img src="copy.png" width="14" height="14" alt="copy">`;
-    btn.addEventListener('click', ()=>{
+    btn.addEventListener('click', ()=> {
       const codeEl = pre.querySelector('code');
-      if(!codeEl) return;
-      const txt = codeEl.textContent;
-      navigator.clipboard.writeText(txt);
-      btn.style.opacity = 0.6;
-      setTimeout(()=> btn.style.opacity = 1, 500);
+      if(codeEl) navigator.clipboard.writeText(codeEl.textContent);
+      btn.style.opacity = 0.6; setTimeout(()=>btn.style.opacity=1,400);
     });
     pre.appendChild(btn);
   });
 }
 
-/* Send flow and server interaction */
-/* Build system prompt from settings/personality and userNickname */
-function systemPrompt(){
-  const base = `You're name is makala (female). Speak ${settings.personality === 'makala_serious' ? 'concise and professional' : 'casual internet slang (lowercase except first word), playful, short (1-3 sentences), use words like lol, fr, beta occasionally).'} Be friendly.`;
-  const namePart = settings.userName ? `If you address the user, call them ${settings.userName}.` : '';
-  return [base, namePart].filter(Boolean).join(' ');
+function renderMathInElement(el){
+  // Replace $$...$$ and $...$ with katex placeholders then render
+  let html = el.innerHTML;
+  html = html.replace(/\$\$([^$]+)\$\$/g, function(_, expr){ return `<span class="katex-display" data-katex="${encodeURIComponent(expr)}"></span>`; });
+  html = html.replace(/\$([^$]+)\$/g, function(_, expr){ return `<span class="katex-inline" data-katex="${encodeURIComponent(expr)}"></span>`; });
+  el.innerHTML = html;
+  const nodes = el.querySelectorAll('[data-katex]');
+  nodes.forEach(node=>{
+    const expr = decodeURIComponent(node.getAttribute('data-katex'));
+    try { katex.render(expr, node, { throwOnError:false, displayMode: node.classList.contains('katex-display') }); }
+    catch(e){ node.textContent = expr; }
+    node.removeAttribute('data-katex');
+  });
 }
 
-async function sendMessageToServer(messages){
-  // send to /api/chat; server must proxy to configured model (OpenRouter/OpenAI)
-  const resp = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ messages, model: settings.model }) });
-  if(!resp.ok){
-    throw new Error(await resp.text());
+async function typeMarkdownIntoElement(text, container){
+  container.dataset.raw = text;
+  container.innerHTML = '';
+  // reveal in short bursts of characters (per-char)
+  for(let i=0;i<=text.length;i++){
+    const sub = text.slice(0,i);
+    const md = marked.parse(sub);
+    container.innerHTML = DOMPurify.sanitize(md);
+    renderMathInElement(container);
+    attachCodeCopyButtons(container);
+    await new Promise(r => setTimeout(r, Math.max(6, Math.min(22, 220/(text.length||10)))));
+    messagesWrap.scrollTop = messagesWrap.scrollHeight;
   }
-  const data = await resp.json();
-  return data;
+  // final render
+  container.innerHTML = DOMPurify.sanitize(marked.parse(text));
+  renderMathInElement(container);
+  attachCodeCopyButtons(container);
 }
 
-/* Request title generation — use server /api/title if available, else fallback to asking /api/chat with a title-prompt */
-async function requestTitleForConversation(messages){
-  // prefer dedicated endpoint
+/* -------------------------
+   Server communication & reply normalization
+   ------------------------- */
+async function sendMessageToServer(payload){
+  const resp = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+  if(!resp.ok) throw new Error(await resp.text());
+  return resp.json();
+}
+
+function normalizeServerReply(data){
+  if(!data) return '';
+  if(typeof data === 'string') return data;
+  if(data.reply){
+    if(typeof data.reply === 'string') return data.reply;
+    try { return JSON.stringify(data.reply); } catch(e){ return String(data.reply); }
+  }
+  if(data.raw && data.raw.choices && data.raw.choices[0]){
+    const c = data.raw.choices[0];
+    if(c.message && c.message.content) return c.message.content;
+    if(c.text) return c.text;
+  }
+  // fallback: stringify small portion
+  try { const s = JSON.stringify(data); return s.length > 1000 ? s.slice(0,1000) + '...' : s; } catch(e){ return String(data); }
+}
+
+/* -------------------------
+   Title generation helper
+   ------------------------- */
+async function requestTitle(candidateText){
   try {
-    const resp = await fetch('/api/title', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ messages, model: settings.model }) });
+    // try /api/title first
+    const resp = await fetch('/api/title', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ messages: [{ role:'user', content: candidateText }] }) });
     if(resp.ok){
-      const data = await resp.json();
-      if(data && data.title) return data.title;
+      const d = await resp.json();
+      if(d && d.title) return d.title;
     }
-  } catch(e){
-    // ignore and fallback
-  }
-
-  // Fallback: ask chat to produce a short descriptive title (not a verbatim restatement).
-  const prompt = `Create a short descriptive title (5 words max) for the user's conversation. Return only the title, no punctuation.`;
-  const system = `You are a helpful assistant that produces short conversation titles.`;
-  const msgs = [{ role:'system', content: system }, ...messages, { role:'user', content: prompt }];
+  } catch(e){ /*ignore*/ }
+  // fallback: call /api/chat with a short title-prompt
   try {
-    const d = await sendMessageToServer(msgs);
-    // server returns { reply: "..." }
-    const r = d?.reply || (d?.raw && d.raw.choices && d.raw.choices[0]?.message?.content) || '';
-    const t = r.split('\n')[0].trim();
-    // sanitize: strip quotes and trailing punctuation, capitalize
-    const clean = t.replace(/^["']|["']$/g,'').replace(/[.!?]+$/,'').trim();
-    return clean;
-  } catch(e){
-    console.warn('title fallback failed', e);
-    return null;
-  }
+    const payload = { messages: [{ role:'system', content: 'You are a title generator. Return a short descriptive title (max 6 words).'}, { role:'user', content: candidateText }, { role:'user', content: 'Return only a short title (no punctuation).' }]};
+    const r = await sendMessageToServer(payload);
+    const t = normalizeServerReply(r).split('\n')[0].trim();
+    return t.replace(/^["']|["']$/g,'').replace(/[.!?]+$/,'').trim();
+  } catch(e){ return null; }
 }
 
-/* Core send function invoked when user submits */
+/* determine system prompt from settings */
+function systemPrompt(){
+  const base = settings.personality === 'makala_serious' ? 
+    'You are Makala (female). Speak concisely and professionally.' :
+    'You are Makala (female). Speak casual internet slang: lowercase except first word, playful, use words like lol, fr, beta. Keep replies short.';
+  const name = settings.userName ? ` If you address the user, call them ${settings.userName}.` : '';
+  return base + name;
+}
+
+/* -------------------------
+   Send flow
+   ------------------------- */
 async function handleSend(){
   const raw = input.value;
-  const normalized = rtrimNewlines(raw);
-  if(!normalized.trim()) return; // nothing
-
-  // append user message to active conversation
-  const conv = convs.find(c => c.id === activeConvId);
+  const trimmed = rtrimNewlines(raw);
+  if(!trimmed.trim()) return;
+  const conv = convs.find(c=>c.id===activeConvId);
   if(!conv) return;
-  const userMsg = { role:'user', content: normalized, created: Date.now() };
+  // store user message (trim trailing newlines)
+  const userMsg = { role:'user', content: rtrimNewlines(raw), created: Date.now() };
   conv.messages.push(userMsg);
   saveConvs();
   renderActiveMessages();
-  input.value = ''; autoResize();
+  input.value = ''; autoResize(); inputWrap.classList.remove('ready');
 
-  // show send button state off
-  inputWrap.classList.remove('ready');
+  // maybe generate title if still default
+  if(!conv.title || conv.title === 'New conversation' || conv.title === 'makala.ai'){
+    const usable = conv.messages.filter(m=>m.role==='user' && m.content && m.content.trim().length>3);
+    if(usable.length){
+      let cand = usable[0].content.trim();
+      if(cand.split(/\s+/).length <= 2 && usable.length>1) cand = usable[1].content.trim();
+      const t = await requestTitle(cand);
+      if(t){
+        conv.title = t;
+        saveConvs();
+        renderConvs();
+        if(conv.id === activeConvId) { convTitle.textContent = conv.title; document.title = conv.title; }
+      }
+    }
+  }
 
-  // maybe generate title (after first or second usable user messages)
-  try { 
-    await maybeGenerateConvTitle(conv);
-  } catch(e) { console.warn('title gen error', e); }
-
-  // build messages with system prompt
-  const messages = [{ role:'system', content: systemPrompt() }, ...conv.messages.map(m => ({ role:m.role, content:m.content }))];
-
-  // show typing indicator
-  const typingRow = { role:'assistant', content: '…', temp:true };
-  conv.messages.push(typingRow); // push temporary
+  // show temporary typing message
+  conv.messages.push({ role:'assistant', content:'', temp:true });
   saveConvs(); renderActiveMessages();
 
+  // build messages to send (system + all conv messages)
+  const payloadMsgs = [{ role:'system', content: systemPrompt() }, ...conv.messages.filter(m=>!m.temp).map(m=>({ role:m.role, content:m.content }))];
+
   try {
-    const response = await sendMessageToServer(messages);
-    // server expected to return { reply: '...' } or forward raw
-    const assistantText = response.reply || (response.raw && response.raw.choices && response.raw.choices[0] && response.raw.choices[0].message && response.raw.choices[0].message.content) || 'No response.';
-    // replace temp with real assistant message
-    conv.messages = conv.messages.filter(m => !m.temp);
+    const resp = await sendMessageToServer({ messages: payloadMsgs, model: settings.model });
+    const assistantText = normalizeServerReply(resp);
+    // replace temp with real assistant
+    conv.messages = conv.messages.filter(m=>!m.temp);
     conv.messages.push({ role:'assistant', content: assistantText, created: Date.now() });
     saveConvs();
     renderActiveMessages();
   } catch(err){
-    conv.messages = conv.messages.filter(m => !m.temp);
+    conv.messages = conv.messages.filter(m=>!m.temp);
     conv.messages.push({ role:'assistant', content: 'Error: ' + String(err), created: Date.now() });
     saveConvs();
     renderActiveMessages();
@@ -689,98 +517,58 @@ async function handleSend(){
   }
 }
 
-/* maybeGenerateConvTitle: creates a title if none saved and there are suitable user messages */
-async function maybeGenerateConvTitle(conv){
-  if(conv.title && conv.title !== 'New conversation') return;
-  // find usable user messages
-  const userMessages = conv.messages.filter(m => m.role === 'user' && m.content && m.content.trim().length > 0);
-  const usable = userMessages.filter(u => u.content.trim().length > 3);
-  if(usable.length === 0) return;
-  // choose candidate (prefer second if first too short)
-  let candidate = usable[0].content.trim();
-  if(candidate.split(/\s+/).length <= 2 && usable.length >= 2) candidate = usable[1].content.trim();
-
-  // build a short prompt to get an improved title
-  const title = await requestTitleForConversation([{ role:'user', content: candidate }]);
-  if(title){
-    conv.title = title;
-    saveConvs();
-    renderConvs();
-    if(conv.id === activeConvId){
-      convTitle.textContent = conv.title;
-      document.title = conv.title;
-    }
-    localStorage.setItem('makala_title_' + conv.id, conv.title);
-  }
-}
-
-/* Auto-resize textarea */
-function autoResize(){
-  input.style.height = 'auto';
-  input.style.height = Math.min(input.scrollHeight, 200) + 'px';
-}
-input.addEventListener('input', ()=>{
-  autoResize();
-  const has = input.value.trim().length > 0;
-  if(has) inputWrap.classList.add('ready'); else inputWrap.classList.remove('ready');
-});
-
-/* Enter to send (Shift+Enter newline) */
-input.addEventListener('keydown', (e)=>{
-  if(e.key === 'Enter' && !e.shiftKey){
-    e.preventDefault();
-    handleSend();
-  }
-});
-
-/* send button click */
+/* -------------------------
+   UI interactions
+   ------------------------- */
+function autoResize(){ input.style.height='auto'; input.style.height = Math.min(input.scrollHeight, 200) + 'px'; }
+input.addEventListener('input', ()=>{ autoResize(); const has = input.value.trim().length>0; if(has) inputWrap.classList.add('ready'); else inputWrap.classList.remove('ready'); });
+input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); handleSend(); }});
 sendBtn.addEventListener('click', handleSend);
 
-/* create default conv if none */
-if(convs.length === 0){
-  createConv('makala.ai');
-} else {
-  renderConvs();
-  if(!activeConvId) activeConvId = convs[0].id;
-  renderActiveMessages();
-}
-
 /* new conversation */
-newConvBtn.addEventListener('click', ()=>{
-  const c = createConv('New conversation');
-  setActiveConv(c.id);
+newConvBtn.addEventListener('click', ()=> createConv('New conversation'));
+
+/* settings modal */
+openSettings.addEventListener('click', ()=> settingsModal.classList.toggle('show'));
+closeSettings.addEventListener('click', ()=> settingsModal.classList.remove('show'));
+saveSettings.addEventListener('click', ()=>{
+  settings.personality = personalityEl.value;
+  settings.userName = userNameEl.value.trim();
+  settings.model = modelInput.value.trim();
+  localStorage.setItem('makala_personality', settings.personality);
+  localStorage.setItem('makala_user', settings.userName);
+  localStorage.setItem('makala_model', settings.model);
+  modelNameEl.textContent = settings.model || 'default';
+  settingsModal.classList.remove('show');
 });
 
-/* copy event delegation for code-copy buttons (works for future blocks too) */
+/* copy-code delegation */
 document.addEventListener('click', (ev)=>{
-  if(ev.target.matches('.copy-code') || ev.target.closest('.copy-code')){
-    const btn = ev.target.closest('.copy-code');
-    const pre = btn.closest('pre');
+  const cbtn = ev.target.closest('.copy-code');
+  if(cbtn){
+    const pre = cbtn.closest('pre');
     const code = pre && pre.querySelector('code');
-    if(code){
-      navigator.clipboard.writeText(code.textContent);
-      btn.style.opacity = .6;
-      setTimeout(()=> btn.style.opacity = 1, 600);
-    }
+    if(code) navigator.clipboard.writeText(code.textContent);
   }
 });
 
-/* Helper: strip trailing newlines (already included above) */
-function rtrimNewlines(s){ return String(s || '').replace(/\r/g,'').replace(/\n+$/,''); }
+/* -------------------------
+   Initialization
+   ------------------------- */
+if(convs.length === 0) createConv('New conversation');
+renderConvs();
+if(!activeConvId) activeConvId = convs[0].id;
+renderActiveMessages();
 
-/* small: when deleting conv, clear its saved title from localStorage */
-function clearConvTitle(id){ localStorage.removeItem('makala_title_' + id); }
+/* restore theme */
+(function initTheme(){ const t = localStorage.getItem('makala_theme') || 'pink'; document.body.className = 'theme-' + t; themeSelect.value = t; })();
+themeSelect.addEventListener('change', (e)=> { document.body.className = 'theme-'+e.target.value; localStorage.setItem('makala_theme', e.target.value); });
 
-/* remove the typing temp message before rendering if present */
-function cleanTempTyping(conv){
-  conv.messages = conv.messages.filter(m => !m.temp);
-}
-
-/* Save on window unload */
+/* Save convs on unload */
 window.addEventListener('beforeunload', ()=> saveConvs());
 
 /* expose for debugging */
-window.__makala = { convs, createConv, deleteConv, renderConvs, renderActiveMessages };
+window.__makala = { convs, settings };
 
 </script>
 </body>
