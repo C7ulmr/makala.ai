@@ -178,8 +178,8 @@ textarea.input:focus{box-shadow:0 12px 28px rgba(255,73,160,0.08);transform:tran
   <div style="margin-top:8px">
     <label style="color:var(--muted)">Personality</label>
     <select id="personality" style="width:100%;margin-top:6px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff">
-      <option value="makala">makala — playful</option>
-      <option value="makala_serious">makala serious — concise</option>
+      <option value="makala">makala</option>
+      <option value="makala_serious">makala serious (talks professionally)</option>
     </select>
   </div>
   <div style="margin-top:8px">
@@ -194,8 +194,8 @@ textarea.input:focus{box-shadow:0 12px 28px rgba(255,73,160,0.08);transform:tran
 
 <script>
 /* ------------- helpers and DOM refs ------------- */
-const $ = s => document.querySelector(s);
-const convListEl = $('#convList'), messagesWrap = $('#messages'), newConvBtn = $('#newConv'),
+t $ = s => document.querySelector(s);
+t convListEl = $('#convList'), messagesWrap = $('#messages'), newConvBtn = $('#newConv'),
       convTitle = $('#convTitle'), input = $('#input'), inputWrap = $('#inputWrap'), sendBtn = $('#sendBtn'),
       themeSelect = $('#themeSelect'), settingsModal = $('#settingsModal'), openSettings = $('#openSettings'),
       saveSettings = $('#saveSettings'), closeSettings = $('#closeSettings'), personalityEl = $('#personality'),
