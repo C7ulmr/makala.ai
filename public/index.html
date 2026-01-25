@@ -24,7 +24,7 @@
   --user-a:#200023; --user-b:#0b0012; --bot-bg: rgba(255,255,255,0.03);
 }
 html,body{height:100%;margin:0;font-family:var(--font);color:#fff;overflow-x:hidden}
-body{display:flex;align-items:center;justify-content:center;padding:28px;background:radial-gradient(700px 500px at 10% 10%, rgba(255,79,160,0.06), transparent),linear-gradient(180deg,var(--bg1),var(--bg2));-webkit-font-smoothing:antialiased}
+body{display:flex;align-items:center;justify-content:center;padding:28px;background:radial-gradient(700px 500px at 10% 10%, rgba(255,79,160,0.06), transparent),linear-gradient(180deg,var(--bg1),var(--bg2));-webkit-font-smoothing:antialiased;transition:background .28s ease}
 
 /* themes set variables so CSS auto-updates */
 body.theme-pink{--bg1:#0a0015;--bg2:#1b001f;--accent-a:#ff49a0;--accent-b:#ff7fcf;--user-a:#200023;--user-b:#0b0012;--bot-bg:rgba(255,255,255,0.03)}
@@ -46,8 +46,6 @@ body.theme-pink, body.theme-deep, body.theme-soft, body.theme-blue, body.theme-o
 .conv-list{flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px;padding-right:6px}
 .conv{display:flex;align-items:center;gap:8px;padding:8px;border-radius:10px;cursor:pointer;color:var(--muted);transition:background .18s, box-shadow .18s}
 .conv.active{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:#fff;box-shadow:0 6px 20px rgba(0,0,0,0.4)}
-
-/* relative time small */
 .conv-meta{font-size:12px;color:var(--muted)}
 
 /* ----------------- panel ----------------- */
@@ -68,13 +66,27 @@ body.theme-pink, body.theme-deep, body.theme-soft, body.theme-blue, body.theme-o
 .bot-meta img{width:20px;height:20px;border-radius:6px;transition:box-shadow .18s}
 .bot-label{font-weight:600;color:#fff;font-size:13px}
 .bot-body{padding:0;color:#fff;white-space:pre-wrap;line-height:1.25;font-size:14px;position:relative;overflow:visible;word-break:break-word;margin:0}
-.bot-inline-copy{display:inline-block;margin-left:8px;vertical-align:middle;cursor:pointer;padding:2px;border-radius:6px;background:rgba(255,255,255,0.02);transition:transform .12s, box-shadow .18s, opacity .16s;opacity:0.98}
-.bot-inline-copy:hover{transform:scale(1.06);box-shadow:0 10px 30px rgba(0,0,0,0.45)}
+.bot-inline-copy{ /* smaller inline copy (patched) */
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:18px;
+  height:18px;
+  margin-left:8px;
+  padding:4px;
+  border-radius:6px;
+  background:rgba(255,255,255,0.03);
+  transition:transform .12s ease, box-shadow .16s ease, opacity .12s ease;
+  box-shadow:0 6px 16px rgba(0,0,0,0.35);
+  cursor:pointer;
+  opacity:0.98;
+}
+.bot-inline-copy img, .copy-code img, .copy-user img { width:100%; height:100%; object-fit:contain; display:block; }
 
 /* CODE block & copy */
 pre.code-block{position:relative;background:#0b0b10;padding:10px;border-radius:8px;overflow:auto;margin:8px 0;font-family:ui-monospace,Menlo,Monaco,'Roboto Mono',monospace;font-size:13px;color:#e6edf3}
-.copy-code{position:absolute;right:8px;top:8px;width:28px;height:28px;cursor:pointer;border-radius:6px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;transition:transform .12s}
-.copy-code:hover{transform:scale(1.06)}
+.copy-code{position:absolute;right:8px;top:8px;width:20px;height:20px;padding:4px;border-radius:6px;cursor:pointer;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;transition:transform .12s, box-shadow .14s}
+.copy-code:hover{transform:scale(1.06);box-shadow:0 12px 30px rgba(0,0,0,0.45)}
 
 /* USER bubbles (use variables so theme updates them) */
 .row-user{display:flex;justify-content:flex-end}
@@ -84,7 +96,7 @@ pre.code-block{position:relative;background:#0b0b10;padding:10px;border-radius:8
   box-shadow:0 6px 18px rgba(0,0,0,0.6);position:relative;white-space:pre-wrap;line-height:1.25;font-size:14px;overflow-wrap:break-word;margin:0;transition:box-shadow .18s, transform .12s;
 }
 .row-user:hover .user-bubble{box-shadow:0 14px 40px rgba(0,0,0,0.45)}
-.user-bubble .copy-user{position:absolute;right:-36px;top:6px;width:26px;height:26px;opacity:0;transition:opacity .18s;cursor:pointer}
+.user-bubble .copy-user{position:absolute;right:-36px;top:6px;width:20px;height:20px;padding:3px;border-radius:6px;background:rgba(255,255,255,0.02);transition:opacity .12s ease, transform .12s;opacity:0;cursor:pointer}
 .row-user:hover .user-bubble .copy-user{opacity:1}
 
 /* user appear animation */
@@ -116,19 +128,19 @@ textarea.input:focus{box-shadow:0 12px 28px rgba(255,73,160,0.08);transform:tran
 </style>
 </head>
 <body class="theme-pink">
-  <div class="app">
+  <div class="app" aria-live="polite">
     <aside class="sidebar">
       <header><strong>Conversations</strong><button class="new-btn" id="newConv">New</button></header>
-      <div class="conv-list" id="convList"></div>
+      <div class="conv-list" id="convList" role="list"></div>
       <div style="margin-top:8px;font-size:12px;color:var(--muted)">Tip: click a convo to open. Use ⋯ to delete.</div>
     </aside>
 
-    <main class="panel">
+    <main class="panel" role="main">
       <div class="header">
         <div class="brand"><img src="makala.png" alt="m"><h1 id="convTitle">makala.ai</h1></div>
         <div class="header-right">
           <button id="openSettings" style="background:transparent;border:0;cursor:pointer;"><img src="settings.png" width="18" height="18" alt="settings"></button>
-          <select id="themeSelect" class="theme-select" title="Theme">
+          <select id="themeSelect" class="theme-select" title="Theme" aria-label="Theme">
             <option value="pink">purple & pink</option>
             <option value="deep">deep black</option>
             <option value="soft">soft purple</option>
@@ -138,12 +150,12 @@ textarea.input:focus{box-shadow:0 12px 28px rgba(255,73,160,0.08);transform:tran
         </div>
       </div>
 
-      <div class="messages-wrap" id="messages"></div>
+      <div class="messages-wrap" id="messages" role="log" aria-live="polite" aria-atomic="false"></div>
 
       <div class="input-area">
         <div class="input-wrap" id="inputWrap">
-          <textarea id="input" class="input" placeholder="ask me anything..." rows="1" spellcheck="false"></textarea>
-          <div class="send-circle" id="sendBtn"><img src="send-circle.png" width="18" height="18" alt="send"></div>
+          <textarea id="input" class="input" placeholder="ask me anything..." rows="1" spellcheck="false" aria-label="message input"></textarea>
+          <div class="send-circle" id="sendBtn" title="Send"><img src="send-circle.png" width="18" height="18" alt="send"></div>
         </div>
       </div>
 
@@ -175,7 +187,7 @@ textarea.input:focus{box-shadow:0 12px 28px rgba(255,73,160,0.08);transform:tran
 </div>
 
 <script>
-/* ------------- small helpers ------------- */
+/* ------------- helpers and DOM refs ------------- */
 const $ = s => document.querySelector(s);
 const convListEl = $('#convList'), messagesWrap = $('#messages'), newConvBtn = $('#newConv'),
       convTitle = $('#convTitle'), input = $('#input'), inputWrap = $('#inputWrap'), sendBtn = $('#sendBtn'),
@@ -187,7 +199,7 @@ function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(
 function rtrimNewlines(s){ return String(s||'').replace(/\r/g,'').replace(/\n+$/,'') }
 function sanitizeHTML(html){ return DOMPurify.sanitize(html) }
 
-/* human-friendly relative time for conv list */
+/* friendly relative time */
 function relativeTime(ts){
   const now = Date.now();
   const diff = Math.max(0, Math.floor((now - ts)/1000)); // seconds
@@ -195,10 +207,8 @@ function relativeTime(ts){
   if(diff < 3600){
     const m = Math.floor(diff/60); return `${m}m ago`;
   }
-  // same-day detection
   const dNow = new Date(now); const dTs = new Date(ts);
   if(dNow.toDateString() === dTs.toDateString()) return 'Today';
-  // yesterday
   const yesterday = new Date(now - 86400000);
   if(yesterday.toDateString() === dTs.toDateString()) return 'Yesterday';
   const days = Math.floor(diff/86400);
@@ -207,11 +217,10 @@ function relativeTime(ts){
   const years = Math.floor(days/365);
   if(years === 1) return 'A year ago';
   if(years >= 2) return 'A long time ago';
-  // fallback months
   return `${Math.floor(days/30)}mo ago`;
 }
 
-/* ------------- storage & conversations ------------- */
+/* ------------- storage & convs ------------- */
 let convs = JSON.parse(localStorage.getItem('makala_convs') || '[]'); if(!Array.isArray(convs)) convs = [];
 let activeConvId = convs[0]?.id || null;
 const settings = { personality: localStorage.getItem('makala_personality') || 'makala', userName: localStorage.getItem('makala_user') || '' };
@@ -232,7 +241,7 @@ function deleteConv(id){
   if(convs.length) setActiveConv(convs[0].id, { clear:true, animate:false }); else createConv('New conversation');
 }
 
-/* ------------- render conversation list ------------- */
+/* ------------- conv list render ------------- */
 function renderConvList(){
   convListEl.innerHTML = '';
   convs.forEach(c=>{
@@ -250,20 +259,19 @@ function renderConvList(){
   });
 }
 
-/* ------------- active conversation rendering ------------- */
+/* ------------- active conv render ------------- */
 function setActiveConv(id, opts={clear:false, animate:false}){
   activeConvId = id; renderConvList();
   const conv = convs.find(x=>x.id===id);
   if(!conv) return;
   convTitle.textContent = conv.title || 'makala.ai';
   if(opts.clear){ messagesWrap.innerHTML=''; conv.renderedCount = 0; }
-  // incremental render: only append missing messages
+  // incremental render: append only missing messages
   const start = conv.renderedCount || 0;
   for(let i=start;i<conv.messages.length;i++){
     appendMessageToDOM(conv, conv.messages[i], { animate: !!opts.animate && i === conv.messages.length-1 });
     conv.renderedCount = i+1;
   }
-  // update conv timestamp (in list) visually
   renderConvList();
   messagesWrap.scrollTop = messagesWrap.scrollHeight;
 }
@@ -275,7 +283,8 @@ function appendMessageToDOM(conv, m, { animate=false } = {}){
     const bubble = document.createElement('div'); bubble.className = 'user-bubble';
     bubble.textContent = rtrimNewlines(m.content || '');
     if(animate) bubble.classList.add('user-appear');
-    const copy = document.createElement('img'); copy.src='copy.png'; copy.className='copy-user'; copy.title='copy'; copy.addEventListener('click', ()=> navigator.clipboard.writeText(m.content || ''));
+    const copy = document.createElement('img'); copy.src='copy.png'; copy.className='copy-user'; copy.title='copy';
+    copy.addEventListener('click', ()=> navigator.clipboard.writeText(m.content || ''));
     bubble.appendChild(copy);
     row.appendChild(bubble);
     messagesWrap.appendChild(row);
@@ -283,7 +292,7 @@ function appendMessageToDOM(conv, m, { animate=false } = {}){
     return;
   }
 
-  // BOT: transparent "bubble" — inline copy appended after text
+  // BOT: transparent presentation; copy inline appended after last character
   const cont = document.createElement('div'); cont.className = 'bot-card';
   const meta = document.createElement('div'); meta.className = 'bot-meta';
   const small = document.createElement('img'); small.src='makala.png'; small.alt='m';
@@ -295,32 +304,27 @@ function appendMessageToDOM(conv, m, { animate=false } = {}){
   messagesWrap.appendChild(cont);
   messagesWrap.scrollTop = messagesWrap.scrollHeight;
 
-  // insert inline copy node (kept in DOM but appended inside body at each update)
-  const inlineCopy = document.createElement('img');
-  inlineCopy.src = 'copy.png'; inlineCopy.className = 'bot-inline-copy'; inlineCopy.title = 'copy';
+  // inline copy icon (small)
+  const inlineCopy = document.createElement('span'); inlineCopy.className = 'bot-inline-copy';
+  inlineCopy.innerHTML = '<img src="copy.png" alt="copy" />';
   inlineCopy.addEventListener('click', ()=> navigator.clipboard.writeText(m.content || ''));
 
   if(animate){
-    // reveal progressively; keep inline copy appended each frame so its position stays after last char
     typeMarkdownIntoElement(rtrimNewlines(m.content || ''), body, inlineCopy);
   } else {
-    // static render, append inline copy after content
     body.innerHTML = sanitizeAndTrim(marked.parse(rtrimNewlines(m.content || '')));
     renderMathInElement(body);
     attachCodeCopyButtons(body);
-    // append copy inline at end of last text node without changing layout (inline-block)
     body.appendChild(inlineCopy);
   }
   messagesWrap.scrollTop = messagesWrap.scrollHeight;
 }
 
-/* sanitize and remove trailing empty blocks (fix phantom blank lines) */
+/* sanitize and trim trailing empty blocks */
 function sanitizeAndTrim(html){
   const clean = DOMPurify.sanitize(html);
-  // remove trailing empty tags like <p></p> or <div><br></div>
   const wrapper = document.createElement('div');
   wrapper.innerHTML = clean;
-  // trim trailing empty nodes
   while(wrapper.lastChild && isEmptyNode(wrapper.lastChild)) wrapper.removeChild(wrapper.lastChild);
   return wrapper.innerHTML;
 }
@@ -341,14 +345,13 @@ function attachCodeCopyButtons(container){
   pres.forEach(pre=>{
     if(pre.querySelector('.copy-code')) return;
     const btn = document.createElement('div'); btn.className='copy-code'; btn.title='copy';
-    btn.innerHTML = `<img src="copy.png" width="14" height="14" alt="copy">`;
+    btn.innerHTML = `<img src="copy.png" width="12" height="12" alt="copy">`;
     btn.addEventListener('click', ()=> { const code = pre.querySelector('code'); if(code) navigator.clipboard.writeText(code.textContent); btn.style.opacity=.6; setTimeout(()=>btn.style.opacity=1,300); });
     pre.appendChild(btn);
   });
 }
 
 function renderMathInElement(el){
-  // convert $...$ and $$...$$ placeholders into katex containers then render
   let html = el.innerHTML;
   html = html.replace(/\$\$([\s\S]+?)\$\$/g, (_, expr)=> `<span class="katex-display" data-katex="${encodeURIComponent(expr)}"></span>`);
   html = html.replace(/\$([^\$]+?)\$/g, (_, expr)=> `<span class="katex-inline" data-katex="${encodeURIComponent(expr)}"></span>`);
@@ -362,33 +365,29 @@ function renderMathInElement(el){
   });
 }
 
-/* per-character typing for NEW bot messages.
-   We accept an inlineCopy node so it can be appended after content each frame. */
+/* per-character typing for new bot messages */
 async function typeMarkdownIntoElement(text, container, inlineCopy){
   container.dataset.raw = text;
   container.innerHTML = '';
   const total = text.length || 1;
   const baseDelay = Math.max(4, Math.min(18, 120 / Math.sqrt(total)));
-  // reveal char-by-char: build substring and parse markdown each frame
   for(let i=0;i<=text.length;i++){
     const sub = text.slice(0,i);
     const parsed = sanitizeAndTrim(marked.parse(sub));
     container.innerHTML = parsed;
     renderMathInElement(container);
     attachCodeCopyButtons(container);
-    // append inline copy after content so it stays visually after last char
     if(inlineCopy && !container.contains(inlineCopy)) container.appendChild(inlineCopy);
     await new Promise(r=>setTimeout(r, baseDelay));
     messagesWrap.scrollTop = messagesWrap.scrollHeight;
   }
-  // final render (ensure fully sanitized, math rendered and code buttons attached)
   container.innerHTML = sanitizeAndTrim(marked.parse(text));
   renderMathInElement(container);
   attachCodeCopyButtons(container);
   if(inlineCopy && !container.contains(inlineCopy)) container.appendChild(inlineCopy);
 }
 
-/* ------------- server comms ------------- */
+/* ------------- server comms helpers ------------- */
 async function sendToServer(payload){
   const resp = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
   if(!resp.ok) throw new Error(await resp.text());
@@ -405,7 +404,7 @@ function normalizeServerReply(data){
   return String(data);
 }
 
-/* ------------- send flow (incremental, no reanim) ------------- */
+/* ------------- send flow (incremental, non-reanimating) ------------- */
 async function handleSend(){
   const raw = input.value;
   const trimmed = rtrimNewlines(raw);
@@ -419,26 +418,24 @@ async function handleSend(){
   appendMessageToDOM(conv, userMsg, { animate:true });
   input.value=''; autoResize(); inputWrap.classList.remove('ready');
 
-  // insert placeholder typing element in UI (static)
+  // placeholder typing
   conv.messages.push({ role:'assistant', content:'', temp:true, created: Date.now() });
   saveConvs();
   const typingRow = document.createElement('div'); typingRow.className='bot-card'; typingRow.id='__typing_row';
   typingRow.innerHTML = `<div class="bot-meta"><img src="makala.png"><div class="bot-label">makala ai</div></div><div class="bot-body"><span class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span></div>`;
   messagesWrap.appendChild(typingRow); messagesWrap.scrollTop = messagesWrap.scrollHeight;
 
-  // build payload: system + conv history (excluding temp)
   const payloadMsgs = [{ role:'system', content: systemPrompt() }, ...conv.messages.filter(m=>!m.temp).map(m=>({ role:m.role, content:m.content }))];
   try{
     const replyData = await sendToServer({ messages: payloadMsgs, model: (localStorage.getItem('makala_model')||'') || undefined });
     const replyText = normalizeServerReply(replyData) || 'no response.';
-    // remove temp placeholders from conv.messages and push final assistant message
     conv.messages = conv.messages.filter(m=>!m.temp);
     const serverMsg = { role:'assistant', content: replyText, created: Date.now() };
     conv.messages.push(serverMsg); saveConvs();
     const tr = document.getElementById('__typing_row'); if(tr) tr.remove();
     appendMessageToDOM(conv, serverMsg, { animate:true });
     conv.renderedCount = conv.messages.length;
-    renderConvList(); // update timestamps maybe
+    renderConvList();
   }catch(err){
     console.error(err);
     const tr = document.getElementById('__typing_row'); if(tr) tr.remove();
@@ -448,7 +445,7 @@ async function handleSend(){
   }
 }
 
-/* ------------- system prompt (personality) ------------- */
+/* ------------- personality/system prompt ------------- */
 function systemPrompt(){
   const base = (settings.personality === 'makala_serious')
     ? 'You are Makala (female). Speak professionally, concisely.'
@@ -457,7 +454,7 @@ function systemPrompt(){
   return base + nameNote;
 }
 
-/* ------------- UI interactions ------------- */
+/* ------------- UI events ------------- */
 function autoResize(){ input.style.height='auto'; input.style.height = Math.min(input.scrollHeight, 200) + 'px' }
 input.addEventListener('input', ()=> { autoResize(); const has = input.value.trim().length>0; if(has) inputWrap.classList.add('ready'); else inputWrap.classList.remove('ready'); });
 input.addEventListener('keydown', (e)=> { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); handleSend(); } });
@@ -473,17 +470,15 @@ document.addEventListener('click', (ev)=> {
   if(c){ const pre = c.closest('pre'); const code = pre && pre.querySelector('code'); if(code) navigator.clipboard.writeText(code.textContent); }
 });
 
-/* ------------- init ------------- */
+/* ------------- initialization ------------- */
 if(convs.length === 0) createConv('New conversation');
 renderConvList();
 if(!activeConvId) activeConvId = convs[0].id;
 setActiveConv(activeConvId, { clear:true, animate:false });
 
-// theme restore and apply (CSS variables handle most updates automatically)
 (function initTheme(){ const t = localStorage.getItem('makala_theme') || 'pink'; document.body.className = 'theme-'+t; themeSelect.value = t; })();
 themeSelect.addEventListener('change', (e)=> { document.body.className = 'theme-'+e.target.value; localStorage.setItem('makala_theme', e.target.value); });
 
-// save conv timestamps on unload
 window.addEventListener('beforeunload', ()=> saveConvs());
 </script>
 </body>
