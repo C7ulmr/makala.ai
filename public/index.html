@@ -60,35 +60,38 @@ body.theme-pink, body.theme-deep, body.theme-soft, body.theme-blue, body.theme-o
 /* ----------------- messages ----------------- */
 .messages-wrap{flex:1;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;overflow-x:hidden}
 
-/* BOT messages (no visible bubble) */
-.bot-card{max-width:78%;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+/* BOT messages (no visible bubble around content) */
+.bot-card{max-width:78%;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
 .bot-meta{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
 .bot-meta img{width:20px;height:20px;border-radius:6px;transition:box-shadow .18s}
 .bot-label{font-weight:600;color:#fff;font-size:13px}
-.bot-body{padding:0;color:#fff;white-space:pre-wrap;line-height:1.25;font-size:14px;position:relative;overflow:visible;word-break:break-word;margin:0}
-.bot-inline-copy{ /* smaller inline copy (patched) */
+
+/* small copy next to label (moved here) */
+.meta-copy{
+  width:18px;
+  height:18px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  width:18px;
-  height:18px;
-  margin-left:8px;
-  padding:4px;
+  padding:3px;
   border-radius:6px;
   background:rgba(255,255,255,0.03);
-  transition:transform .12s ease, box-shadow .16s ease, opacity .12s ease;
-  box-shadow:0 6px 16px rgba(0,0,0,0.35);
   cursor:pointer;
-  opacity:0.98;
+  transition:transform .12s, box-shadow .14s, opacity .12s;
 }
-.bot-inline-copy img, .copy-code img, .copy-user img { width:100%; height:100%; object-fit:contain; display:block; }
+.meta-copy img{width:100%;height:100%;object-fit:contain;display:block}
+.meta-copy:hover{transform:scale(1.06);box-shadow:0 10px 24px rgba(0,0,0,0.35)}
+
+/* BOT body content */
+.bot-body{padding:0;color:#fff;white-space:pre-wrap;line-height:1.25;font-size:14px;position:relative;overflow:visible;word-break:break-word;margin:0}
 
 /* CODE block & copy */
 pre.code-block{position:relative;background:#0b0b10;padding:10px;border-radius:8px;overflow:auto;margin:8px 0;font-family:ui-monospace,Menlo,Monaco,'Roboto Mono',monospace;font-size:13px;color:#e6edf3}
 .copy-code{position:absolute;right:8px;top:8px;width:20px;height:20px;padding:4px;border-radius:6px;cursor:pointer;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;transition:transform .12s, box-shadow .14s}
+.copy-code img{width:14px;height:14px;object-fit:contain}
 .copy-code:hover{transform:scale(1.06);box-shadow:0 12px 30px rgba(0,0,0,0.45)}
 
-/* USER bubbles (use variables so theme updates them) */
+/* USER bubbles */
 .row-user{display:flex;justify-content:flex-end}
 .user-bubble{
   background:linear-gradient(90deg,var(--user-a),var(--user-b));
@@ -292,30 +295,31 @@ function appendMessageToDOM(conv, m, { animate=false } = {}){
     return;
   }
 
-  // BOT: transparent presentation; copy inline appended after last character
+  // BOT: meta (logo + label + copy placed here) + body content
   const cont = document.createElement('div'); cont.className = 'bot-card';
   const meta = document.createElement('div'); meta.className = 'bot-meta';
   const small = document.createElement('img'); small.src='makala.png'; small.alt='m';
   const label = document.createElement('div'); label.className='bot-label'; label.textContent='makala ai';
   meta.appendChild(small); meta.appendChild(label);
 
+  // meta-level copy (placed directly beside label)
+  const metaCopy = document.createElement('div'); metaCopy.className = 'meta-copy';
+  metaCopy.innerHTML = `<img src="copy.png" alt="copy">`;
+  metaCopy.title = 'copy';
+  metaCopy.addEventListener('click', ()=> navigator.clipboard.writeText(m.content || ''));
+  meta.appendChild(metaCopy);
+
   const body = document.createElement('div'); body.className = 'bot-body';
   cont.appendChild(meta); cont.appendChild(body);
   messagesWrap.appendChild(cont);
   messagesWrap.scrollTop = messagesWrap.scrollHeight;
 
-  // inline copy icon (small)
-  const inlineCopy = document.createElement('span'); inlineCopy.className = 'bot-inline-copy';
-  inlineCopy.innerHTML = '<img src="copy.png" alt="copy" />';
-  inlineCopy.addEventListener('click', ()=> navigator.clipboard.writeText(m.content || ''));
-
   if(animate){
-    typeMarkdownIntoElement(rtrimNewlines(m.content || ''), body, inlineCopy);
+    typeMarkdownIntoElement(rtrimNewlines(m.content || ''), body, null); // no inline copy in body anymore
   } else {
     body.innerHTML = sanitizeAndTrim(marked.parse(rtrimNewlines(m.content || '')));
     renderMathInElement(body);
     attachCodeCopyButtons(body);
-    body.appendChild(inlineCopy);
   }
   messagesWrap.scrollTop = messagesWrap.scrollHeight;
 }
@@ -366,7 +370,7 @@ function renderMathInElement(el){
 }
 
 /* per-character typing for new bot messages */
-async function typeMarkdownIntoElement(text, container, inlineCopy){
+async function typeMarkdownIntoElement(text, container, _unused){
   container.dataset.raw = text;
   container.innerHTML = '';
   const total = text.length || 1;
@@ -377,14 +381,12 @@ async function typeMarkdownIntoElement(text, container, inlineCopy){
     container.innerHTML = parsed;
     renderMathInElement(container);
     attachCodeCopyButtons(container);
-    if(inlineCopy && !container.contains(inlineCopy)) container.appendChild(inlineCopy);
     await new Promise(r=>setTimeout(r, baseDelay));
     messagesWrap.scrollTop = messagesWrap.scrollHeight;
   }
   container.innerHTML = sanitizeAndTrim(marked.parse(text));
   renderMathInElement(container);
   attachCodeCopyButtons(container);
-  if(inlineCopy && !container.contains(inlineCopy)) container.appendChild(inlineCopy);
 }
 
 /* ------------- server comms helpers ------------- */
@@ -422,7 +424,7 @@ async function handleSend(){
   conv.messages.push({ role:'assistant', content:'', temp:true, created: Date.now() });
   saveConvs();
   const typingRow = document.createElement('div'); typingRow.className='bot-card'; typingRow.id='__typing_row';
-  typingRow.innerHTML = `<div class="bot-meta"><img src="makala.png"><div class="bot-label">makala ai</div></div><div class="bot-body"><span class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span></div>`;
+  typingRow.innerHTML = `<div class="bot-meta"><img src="makala.png"><div class="bot-label">makala ai</div><div class="meta-copy"><img src="copy.png" alt="copy"></div></div><div class="bot-body"><span class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span></div>`;
   messagesWrap.appendChild(typingRow); messagesWrap.scrollTop = messagesWrap.scrollHeight;
 
   const payloadMsgs = [{ role:'system', content: systemPrompt() }, ...conv.messages.filter(m=>!m.temp).map(m=>({ role:m.role, content:m.content }))];
