@@ -61,7 +61,7 @@ body.theme-pink, body.theme-deep, body.theme-soft, body.theme-blue, body.theme-o
 .messages-wrap{flex:1;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;overflow-x:hidden}
 
 /* BOT messages (no visible bubble around content) */
-.bot-card{max-width:78%;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.bot-card{max-width:78%;display:flex;flex-direction:column;gap:4px;align-items:flex-start;width:100%}
 .bot-meta{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
 .bot-meta img{width:20px;height:20px;border-radius:6px;transition:box-shadow .18s}
 .bot-label{font-weight:600;color:#fff;font-size:13px}
@@ -91,12 +91,15 @@ pre.code-block{position:relative;background:#0b0b10;padding:10px;border-radius:8
 .copy-code img{width:14px;height:14px;object-fit:contain}
 .copy-code:hover{transform:scale(1.06);box-shadow:0 12px 30px rgba(0,0,0,0.45)}
 
-/* USER bubbles */
-.row-user{display:flex;justify-content:flex-end}
+/* USER bubbles
+   Key right-alignment rules added: .row-user fills width and justifies content to right,
+   user-bubble uses margin-left:auto to pin to the right edge. */
+.row-user{display:flex;justify-content:flex-end;align-items:flex-end;width:100%}
 .user-bubble{
   background:linear-gradient(90deg,var(--user-a),var(--user-b));
   color:#ffdff4;padding:10px 14px;border-radius:14px 14px 6px 14px;max-width:48%;min-width:80px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.6);position:relative;white-space:pre-wrap;line-height:1.25;font-size:14px;overflow-wrap:break-word;margin:0;transition:box-shadow .18s, transform .12s;
+  box-shadow:0 6px 18px rgba(0,0,0,0.6);position:relative;white-space:pre-wrap;line-height:1.25;font-size:14px;overflow-wrap:break-word;margin:0 0 0 8px;transition:box-shadow .18s, transform .12s;
+  margin-left:auto; /* ensures bubble is pushed to the right */
 }
 .row-user:hover .user-bubble{box-shadow:0 14px 40px rgba(0,0,0,0.45)}
 .user-bubble .copy-user{position:absolute;right:-36px;top:6px;width:20px;height:20px;padding:3px;border-radius:6px;background:rgba(255,255,255,0.02);transition:opacity .12s ease, transform .12s;opacity:0;cursor:pointer}
