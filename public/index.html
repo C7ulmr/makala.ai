@@ -42,8 +42,8 @@
   /* sidebar */
   .sidebar{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:var(--ui-radius);padding:12px;height:100%;box-shadow:0 12px 30px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column}
   header.sidebar-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-  .makalina-rect { background:linear-gradient(90deg,var(--accent-a),var(--accent-b)); color:#fff; border-radius:10px; padding:8px 10px; border:0; cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600; box-shadow:0 12px 30px rgba(0,0,0,0.3);}
-  .makalina-rect img{width:22px;height:22px;border-radius:6px}
+  .makalina-img { width:44px; height:44px; border-radius:8px; overflow:hidden; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; border:0; background:transparent; padding:0; }
+  .makalina-img img{ width:100%; height:100%; object-fit:contain; display:block; }
   .new-btn{ margin-left:auto; background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.04); padding:6px 8px; border-radius:8px; cursor:pointer}
   .conv-list{flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px;padding-right:6px}
   .conv{display:flex;align-items:center;gap:8px;padding:8px;border-radius:10px;cursor:pointer;color:var(--muted);transition:background .12s}
@@ -102,7 +102,7 @@
   .bot-char{display:inline-block;opacity:0;transform:translateY(4px);animation:charIn .06s forwards}
   @keyframes charIn{to{opacity:1;transform:none}}
 
-  /* typing star inline near text baseline */
+  /* typing star */
   .typing-star{display:inline-block;width:12px;height:12px;vertical-align:baseline;margin-left:4px;opacity:0;transform:scale(.85);transition:opacity .18s, transform .18s}
   .typing-star img{width:100%;height:100%;display:block}
   .typing-star.visible{opacity:1;transform:scale(1);filter:drop-shadow(0 6px 12px rgba(0,0,0,0.25))}
@@ -116,9 +116,10 @@
   .input-wrap.ready .send-circle{display:flex}
   .send-circle img{width:18px;height:18px}
 
-  /* modal, inputs (backdrop made darker, modal more opaque) */
+  /* modal, inputs */
   .modal-backdrop{position:fixed;inset:0;background:rgba(2,4,10,0.85);display:flex;align-items:center;justify-content:center;z-index:90}
-  .modal{width:520px;max-width:calc(100% - 32px);background:linear-gradient(180deg, #0b0712, #0f0716);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+  .modal{width:520px;max-width:calc(100% - 32px);background:linear-gradient(180deg, #0b0712, #0f0716);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+  .modal img.full{width:100%;height:auto;border-radius:8px;margin:6px 0} /* tightened margins above/below the full logo */
   .field{width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff;font-family:var(--font)}
   .ttt-board{width:320px;height:320px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;position:relative}
   .ttt-cell{background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;font-size:46px;border-radius:8px;cursor:pointer;transition:transform .12s, background .12s;user-select:none;aspect-ratio:1/1}
@@ -137,8 +138,9 @@
     <aside class="sidebar">
       <header class="sidebar-h">
         <div style="display:flex;align-items:center;gap:8px">
-          <button class="makalina-rect" id="makalinaBtn" title="Purchase makalina">
-            <img src="makalina.png" alt="makalina"><span>makalina</span>
+          <!-- makalina button: IMAGE ONLY, positioned above tip (here in header) -->
+          <button id="makalinaBtn" class="makalina-img" title="Get Makalina">
+            <img src="makalina.png" alt="makalina">
           </button>
           <strong style="font-size:14px">Conversations</strong>
         </div>
@@ -206,8 +208,8 @@
 
 <script>
 /* ---------- helpers ---------- */
-const $ = (s, root=document)=> root.querySelector(s);
-const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const $ = (s,root=document) => root.querySelector(s);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
 const rtrimNewlines = s => String(s||'').replace(/\r/g,'').replace(/\n+$/,'');
 const sanitize = html => DOMPurify.sanitize(html);
 
@@ -239,7 +241,7 @@ const convListEl = $('#convList'), messagesWrap = $('#messages'), newConvBtn = $
   if(!activeConvId) activeConvId = convs[0].id;
 })();
 (function initTheme(){ const t = localStorage.getItem('makala_theme')||'pink'; document.body.className = 'theme-'+t; themeSelect.value=t; })();
-renderConvList(); setActiveConv(activeConvId, { clear:true, animate:false }); renderUserInfo();
+renderConvList(); setActiveConv(activeConvId, { clear:true, animate:false }); renderUserInfo(); enforceMakalinaAvailability();
 
 /* ---------- conv list ---------- */
 function relativeTime(ts){ const now=Date.now(); const s = Math.floor((now-ts)/1000); if(s<60) return 'just now'; if(s<3600) return Math.floor(s/60)+'m ago'; const dNow=new Date(), dTs=new Date(ts); if(dNow.toDateString()===dTs.toDateString()) return 'Today'; const yesterday=new Date(now-86400000); if(yesterday.toDateString()===dTs.toDateString()) return 'Yesterday'; const days=Math.floor(s/86400); if(days<7) return days+'d ago'; if(days<30) return Math.floor(days/7)+'w ago'; const yrs=Math.floor(days/365); if(yrs===1) return 'A year ago'; if(yrs>=2) return 'A long time ago'; return Math.floor(days/30)+'mo ago'; }
@@ -259,9 +261,9 @@ function renderConvList(){
 function createConv(title='New conversation'){ const c={id:uid(),title:title||'New conversation',created:Date.now(),messages:[],renderedCount:0,personality:'makala'}; convs.unshift(c); saveConvs(); renderConvList(); setActiveConv(c.id,{clear:true,animate:false}); return c; }
 function deleteConv(id){ const i=convs.findIndex(x=>x.id===id); if(i>=0) convs.splice(i,1); if(activeConvId===id) activeConvId=convs[0]?.id||null; saveConvs(); saveActive(); renderConvList(); if(convs.length===0) createConv('New conversation'); setActiveConv(activeConvId,{clear:true,animate:false}); }
 
-function setActiveConv(id, opts={clear:false,animate:false}){ activeConvId=id; saveActive(); renderConvList(); const conv=convs.find(x=>x.id===id); if(!conv) return; convTitle.textContent = conv.title || 'New conversation'; convPersonality.value = conv.personality || 'makala'; if(opts.clear){ messagesWrap.innerHTML=''; conv.renderedCount=0; } const start = conv.renderedCount||0; for(let i=start;i<conv.messages.length;i++){ appendMessageToDOM(conv, conv.messages[i], { animate: (i===conv.messages.length-1) && !!opts.animate }); conv.renderedCount = i+1; } messagesWrap.scrollTop = messagesWrap.scrollHeight; brandImg.src = (conv.personality==='makalina') ? 'linastar.png' : 'makala.png'; }
+function setActiveConv(id, opts={clear:false,animate:false}){ activeConvId=id; saveActive(); renderConvList(); const conv=convs.find(x=>x.id===id); if(!conv) return; convTitle.textContent = conv.title || 'New conversation'; convPersonality.value = conv.personality || 'makala'; if(opts.clear){ messagesWrap.innerHTML=''; conv.renderedCount=0; } const start = conv.renderedCount||0; for(let i=start;i<conv.messages.length;i++){ appendMessageToDOM(conv, conv.messages[i], { animate: (i===conv.messages.length-1) && !!opts.animate }); conv.renderedCount = i+1; } messagesWrap.scrollTop = messagesWrap.scrollHeight; brandImg.src = (conv.personality==='makalina') ? 'linastar.png' : 'makala.png'; enforceMakalinaAvailability(); }
 
-/* ---------- message rendering ---------- */
+/* ---------- message rendering (kept same) ---------- */
 function appendUserToDOM(conv, m, { animate=false } = {}){
   const row=document.createElement('div'); row.className='row-user';
   const bubble=document.createElement('div'); bubble.className='user-bubble';
@@ -291,7 +293,6 @@ function appendBotToDOM(conv, m, { animate=false } = {}){
   }
 }
 
-/* trim trailing blanks */
 function sanitizeAndTrim(html){
   const clean = DOMPurify.sanitize(html);
   const wrapper = document.createElement('div'); wrapper.innerHTML = clean;
@@ -324,7 +325,7 @@ function attachOrGetStar(container, conv){
   return s;
 }
 
-/* typing reveal (per char) */
+/* typing reveal */
 async function typeMarkdownIntoElement(text, container, conv){
   container.dataset.animating = '1';
   container.innerHTML = '';
@@ -379,7 +380,7 @@ function renderMathInElement(el){
   });
 }
 
-/* ---------- server comms ---------- */
+/* ---------- server comms (unchanged) ---------- */
 async function sendToServer(payload){
   const resp = await fetch('/api/chat',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
   if(!resp.ok) throw new Error(await resp.text());
@@ -467,67 +468,106 @@ function autoResize(){ input.style.height='auto'; input.style.height = Math.min(
 /* code copy delegation */
 document.addEventListener('click', (ev)=> { const c = ev.target.closest('.copy-code'); if(c){ const pre = ev.target.closest('pre'); const code = pre && pre.querySelector('code'); if(code) navigator.clipboard.writeText(code.textContent); } });
 
-/* ---------- Makalina modal / purchase ---------- */
+/* ---------- Makalina modal / purchase (UPDATED) ---------- */
 function openMakalinaModal(){
-  modalContainer.innerHTML = `<div class="modal-backdrop"><div class="modal"><img src="fullmakalina.png" alt="makalina" style="width:100%;border-radius:8px;margin-bottom:12px"><h3 style="margin:0 0 8px">Purchase Makalina</h3><p style="color:var(--muted);margin:0 0 12px">Makalina adds a refined persona and cosmetic perks. Price: <strong>$0.00</strong></p><div style="display:flex;gap:8px;margin-bottom:12px"><input id="buyerName" class="field" placeholder="Display name"/><input id="favNumber" class="field" placeholder="Favourite number" style="max-width:120px"/></div><div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><label style="color:var(--muted);margin-right:6px">Profile image</label><input id="pfpFile" type="file" accept="image/*" class="field" style="max-width:220px"/></div><div style="display:flex;gap:8px;align-items:center;justify-content:space-between"><div>subtotal: <strong>$0.00</strong></div><div style="display:flex;gap:8px"><button id="cancelBuy" class="new-btn">Cancel</button><button id="confirmBuy" class="makalina-rect">Purchase</button></div></div></div></div>`;
+  modalContainer.innerHTML = `<div class="modal-backdrop"><div class="modal">
+    <img src="fullmakalina.png" alt="makalina" class="full" style="margin-top:6px;margin-bottom:6px">
+    <h3 style="margin:6px 0">Purchase Makalina</h3>
+    <p style="color:var(--muted);margin:6px 0 12px">Makalina adds a refined persona and cosmetic perks. Demo price: <strong>$0.00</strong></p>
+
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <input id="buyerName" class="field" placeholder="Display name (optional)"/>
+      <input id="favNumber" class="field" placeholder="Favourite number" style="max-width:120px"/>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+      <label style="color:var(--muted);margin-right:6px">Profile image</label>
+      <input id="pfpFile" type="file" accept="image/*" class="field" style="max-width:220px"/>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+      <input id="discountCode" class="field" placeholder="Discount code (optional)" style="max-width:220px"/>
+      <button id="applyDiscount" class="new-btn">Apply</button>
+      <div id="discountLabel" style="color:var(--muted);margin-left:auto">no discount</div>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+      <div>
+        <div>subtotal: <strong>$0.00</strong></div>
+        <div id="discountRow" style="color:var(--muted);display:none">discount: <strong id="discountPct">-25%</strong></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="cancelBuy" class="new-btn">Cancel</button>
+        <button id="confirmBuy" class="makalina-rect">Purchase</button>
+      </div>
+    </div>
+  </div></div>`;
   modalContainer.style.display='block';
+
+  let discountApplied = 0;
+  $('#applyDiscount').addEventListener('click', ()=>{
+    const code = $('#discountCode').value.trim();
+    if(!code){ $('#discountLabel').textContent = 'enter code'; return; }
+    if(code.toUpperCase() === 'MARCH25'){ discountApplied = 0.25; $('#discountLabel').textContent = '25% off applied'; $('#discountRow').style.display='block'; $('#discountPct').textContent='-25%'; }
+    else { discountApplied = 0; $('#discountLabel').textContent = 'invalid code'; $('#discountRow').style.display='none'; }
+  });
+
   $('#cancelBuy').addEventListener('click', ()=> { modalContainer.style.display='none'; modalContainer.innerHTML=''; });
-  $('#confirmBuy').addEventListener('click', ()=>{
+  $('#confirmBuy').addEventListener('click', ()=> {
     const name = $('#buyerName').value.trim(); settings.makalinaOwned = true; if(name) settings.userName = name;
     const file = $('#pfpFile').files && $('#pfpFile').files[0];
-    if(file){ const reader = new FileReader(); reader.onload = e=>{ settings.pfpData = e.target.result; saveOwnership(); modalContainer.innerHTML=''; modalContainer.style.display='none'; refreshAfterPurchase(); }; reader.readAsDataURL(file); } else { saveOwnership(); modalContainer.innerHTML=''; modalContainer.style.display='none'; refreshAfterPurchase(); }
+    if(file){
+      const reader = new FileReader();
+      reader.onload = e=>{ settings.pfpData = e.target.result; saveOwnership(); modalContainer.innerHTML=''; modalContainer.style.display='none'; refreshAfterPurchase(); };
+      reader.readAsDataURL(file);
+    } else { saveOwnership(); modalContainer.innerHTML=''; modalContainer.style.display='none'; refreshAfterPurchase(); }
   });
 }
-function refreshAfterPurchase(){ document.getElementById('favicon').href = '/makalina.ico'; refreshMakalinaUI(); renderUserInfo(); setTimeout(()=> location.reload(), 300); }
+function refreshAfterPurchase(){ document.getElementById('favicon').href = '/makalina.ico'; refreshMakalinaUI(); renderUserInfo(); setTimeout(()=> location.reload(), 250); }
 
 /* ---------- user info ---------- */
 function renderUserInfo(){ if(settings.makalinaOwned){ userInfo.style.display='flex'; userNameDisplay.textContent = settings.userName || 'you'; coinCountEl.textContent = settings.coins || 0; if(settings.pfpData) userPfp.querySelector('img').src = settings.pfpData; else userPfp.querySelector('img').src = 'makala.png'; } else userInfo.style.display='none'; }
-function refreshMakalinaUI(){ if(settings.makalinaOwned){ makalinaBtn.style.display='none'; document.getElementById('favicon').href='/makalina.ico'; playTttBtn.style.display='inline-flex'; } else { makalinaBtn.style.display='inline-flex'; document.getElementById('favicon').href='/makala.ico'; playTttBtn.style.display='inline-flex'; } renderUserInfo(); }
+function refreshMakalinaUI(){ if(settings.makalinaOwned){ makalinaBtn.style.display='none'; document.getElementById('favicon').href='/makalina.ico'; playTttBtn.disabled = false; } else { makalinaBtn.style.display='inline-flex'; document.getElementById('favicon').href='/makala.ico'; playTttBtn.disabled = true; } renderUserInfo(); enforceMakalinaAvailability(); }
 refreshMakalinaUI();
 
-/* ---------- Tic Tac Toe ---------- */
+/* Ensure Makalina personality option and TTT availability reflect ownership */
+function enforceMakalinaAvailability(){
+  const opt = Array.from(convPersonality.options).find(o=>o.value==='makalina');
+  if(opt) opt.disabled = !settings.makalinaOwned;
+  if(!settings.makalinaOwned){
+    // if current conv selected makalina, revert to makala
+    const conv = convs.find(c=>c.id===activeConvId);
+    if(conv && conv.personality==='makalina'){ conv.personality='makala'; saveConvs(); setActiveConv(activeConvId,{clear:true,animate:false}); }
+  }
+  playTttBtn.disabled = !settings.makalinaOwned;
+  // clicking disabled play opens purchase modal (explicitly unplayable)
+  playTttBtn.onclick = ()=> { if(settings.makalinaOwned) openTicTacToe(); else openMakalinaModal(); };
+  // makalina button triggers buy modal if not owned, otherwise hidden by refreshMakalinaUI
+  makalinaBtn.onclick = ()=> { if(!settings.makalinaOwned) openMakalinaModal(); };
+}
+
+/* ---------- Tic Tac Toe (unchanged but blocked when not owned) ---------- */
 function openTicTacToe(){
+  if(!settings.makalinaOwned){ openMakalinaModal(); return; } // unplayable if not owned
+
   modalContainer.innerHTML = `<div class="modal-backdrop"><div class="modal"><h3 style="margin:0 0 8px">tic tac toe — play makala</h3><div id="tttBoardWrapper" style="position:relative"><div id="tttBoard" class="ttt-board"></div><svg class="ttt-line" id="tttLine" viewBox="0 0 320 320" preserveAspectRatio="none"></svg></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px"><div>Your coins: <img src="coins.png" style="width:18px;height:18px;vertical-align:middle;margin-right:6px" class="spin"> <span id="coinCountModal">${settings.coins}</span></div><div style="display:flex;gap:8px"><button id="tttReset" class="new-btn">Reset board</button><button id="closeTtt" class="new-btn">Close</button></div></div></div></div>`;
   modalContainer.style.display='block';
   const board = $('#tttBoard'); const svg = $('#tttLine'); let state = Array(9).fill(''); let done=false;
   const conv = convs.find(c=>c.id===activeConvId) || { personality:'makala' };
 
   function renderBoard(){ board.innerHTML=''; state.forEach((v,i)=>{ const cell=document.createElement('div'); cell.className='ttt-cell'; cell.dataset.i=i; if(v==='X'){ const img=document.createElement('img'); img.src = (conv.personality==='makalina'?'linastar.png':'star.png'); img.style.width='46px'; img.style.height='46px'; cell.appendChild(img); } else if(v==='O'){ cell.textContent='O'; } cell.addEventListener('click', ()=> onCell(i,cell)); board.appendChild(cell); }); }
-  function onCell(i,el){ if(done || state[i]) return; state[i]='O'; renderBoard(); if(checkWin('O')) return endGame(true); if(state.every(Boolean)) return endGame(null); // computer move
-    setTimeout(()=>{ const free = state.map((v,idx)=> v?null:idx).filter(v=>v!==null); const pick = free[Math.floor(Math.random()*free.length)]; state[pick]='X'; renderBoard(); if(checkWin('X')) return endGame(false); if(state.every(Boolean)) return endGame(null); }, 420);
-  }
+  function onCell(i,el){ if(done || state[i]) return; state[i]='O'; renderBoard(); if(checkWin('O')) return endGame(true); if(state.every(Boolean)) return endGame(null); setTimeout(()=>{ const free = state.map((v,idx)=> v?null:idx).filter(v=>v!==null); const pick = free[Math.floor(Math.random()*free.length)]; state[pick]='X'; renderBoard(); if(checkWin('X')) return endGame(false); if(state.every(Boolean)) return endGame(null); }, 420); }
   function checkWin(sym){ const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; return wins.find(w=> w.every(i=> state[i]===sym)); }
-  function drawWinLine(winIndices){
-    // map indices to coordinates inside 320x320 box
-    const coords = [
-      [16,16],[160,16],[304,16],
-      [16,160],[160,160],[304,160],
-      [16,304],[160,304],[304,304]
-    ];
-    const a = coords[winIndices[0]]; const b = coords[winIndices[2]];
-    svg.innerHTML = `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="rgba(255,255,255,0.6)" stroke-width="6" stroke-linecap="round"/>`;
-  }
-  function endGame(userWon){
-    done=true;
-    const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-    const w = wins.find(wi=> wi.every(i=> state[i]=== (userWon? 'O' : 'X')));
-    if(w) drawWinLine(w);
-    const amt=Math.floor(Math.random()*50)+1;
-    if(userWon===true){ settings.coins=(settings.coins||0)+amt; setTimeout(()=> alert(`you win ${amt} makala's coins!`), 120); }
-    else if(userWon===false){ settings.coins=Math.max(0,(settings.coins||0)-amt); setTimeout(()=> alert(`you lost ${amt} coins...`), 120); }
-    else setTimeout(()=> alert('draw — no coins'), 120);
-    saveOwnership(); $('#coinCountModal').textContent=settings.coins; coinCountEl.textContent=settings.coins;
-    // auto reset after 2.2s
-    setTimeout(()=>{ state = Array(9).fill(''); done=false; svg.innerHTML=''; renderBoard(); }, 2200);
-  }
+  function drawWinLine(winIndices){ const coords=[[16,16],[160,16],[304,16],[16,160],[160,160],[304,160],[16,304],[160,304],[304,304]]; const a=coords[winIndices[0]]; const b=coords[winIndices[2]]; svg.innerHTML = `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="rgba(255,255,255,0.6)" stroke-width="6" stroke-linecap="round"/>`; }
+  function endGame(userWon){ done=true; const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; const w=wins.find(wi=> wi.every(i=> state[i]=== (userWon? 'O' : 'X'))); if(w) drawWinLine(w); const amt=Math.floor(Math.random()*50)+1; if(userWon===true){ settings.coins=(settings.coins||0)+amt; setTimeout(()=> alert(`you win ${amt} makala's coins!`), 120); } else if(userWon===false){ settings.coins=Math.max(0,(settings.coins||0)-amt); setTimeout(()=> alert(`you lost ${amt} coins...`), 120); } else setTimeout(()=> alert('draw — no coins'), 120); saveOwnership(); $('#coinCountModal').textContent=settings.coins; coinCountEl.textContent=settings.coins; setTimeout(()=>{ state = Array(9).fill(''); done=false; svg.innerHTML=''; renderBoard(); }, 2200); }
   $('#tttReset').addEventListener('click', ()=> { state = Array(9).fill(''); done=false; svg.innerHTML=''; renderBoard(); });
   $('#closeTtt').addEventListener('click', ()=> { modalContainer.innerHTML=''; modalContainer.style.display='none'; });
   renderBoard();
 }
 
 /* ---------- events ---------- */
-makalinaBtn.addEventListener('click', openMakalinaModal);
-playTttBtn.addEventListener('click', openTicTacToe);
+makalinaBtn.addEventListener('click', ()=> { if(!settings.makalinaOwned) openMakalinaModal(); });
+playTttBtn.addEventListener('click', ()=> { if(settings.makalinaOwned) openTicTacToe(); else openMakalinaModal(); });
 resetBtn.addEventListener('click', ()=> { if(confirm('Reset everything?')){ localStorage.clear(); location.reload(); } });
 themeSelect.addEventListener('change', (e)=> { document.body.className='theme-'+e.target.value; localStorage.setItem('makala_theme', e.target.value); });
 
@@ -536,6 +576,10 @@ document.addEventListener('click', (ev)=> { if(ev.target.closest('.copy-code')){
 
 /* ---------- small helpers ---------- */
 function appendMessageToDOM(conv, m, opts={}){ if(m.role==='user') appendUserToDOM(conv,m,opts); else appendBotToDOM(conv,m,opts); }
+function sanitizeAndTrim(html){ return sanitize(html).replace(/\s+$/,''); }
+
+/* ---------- initial UI state enforcement ---------- */
+enforceMakalinaAvailability();
 
 </script>
 </body>
