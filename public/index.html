@@ -29,7 +29,7 @@
   body{display:flex;align-items:center;justify-content:center;padding:24px;transition:background .28s ease}
   .app{width:980px;max-width:calc(100% - 40px);height:720px;display:grid;grid-template-columns:240px 1fr;gap:18px;align-items:start}
 
-  /* themes */
+  /* themes (same as before) */
   body.theme-pink{ --bg1:#0a0015;--bg2:#1b001f;--accent-a:#ff49a0;--accent-b:#ff7fcf;--user-a:#200023;--user-b:#0b0012;--bot-bg:rgba(255,255,255,0.03)}
   body.theme-deep{ --bg1:#020202;--bg2:#000;--accent-a:#ff007f;--accent-b:#ff4fb1;--user-a:#0b0b0b;--user-b:#000000;--bot-bg:rgba(255,255,255,0.02)}
   body.theme-soft{ --bg1:#0b0710;--bg2:#1b1128;--accent-a:#b98cff;--accent-b:#8fb7ff;--user-a:#161023;--user-b:#0b0620;--bot-bg:rgba(255,255,255,0.035)}
@@ -102,10 +102,13 @@
   .bot-char{display:inline-block;opacity:0;transform:translateY(4px);animation:charIn .06s forwards}
   @keyframes charIn{to{opacity:1;transform:none}}
 
-  /* typing star */
-  .typing-star{display:inline-block;width:12px;height:12px;vertical-align:baseline;margin-left:4px;opacity:0;transform:scale(.85);transition:opacity .18s, transform .18s}
+  /* typing star (bigger, baseline-aligned, hover visible) */
+  .typing-star{display:inline-block;width:16px;height:16px;vertical-align:baseline;margin-left:6px;opacity:0;transform:translateY(2px) scale(.92);transition:opacity .18s, transform .18s}
   .typing-star img{width:100%;height:100%;display:block}
-  .typing-star.visible{opacity:1;transform:scale(1);filter:drop-shadow(0 6px 12px rgba(0,0,0,0.25))}
+  .typing-star.visible{opacity:1;transform:translateY(0) scale(1.08);filter:drop-shadow(0 6px 12px rgba(0,0,0,0.25))}
+  .typing-star.big{ transform:translateY(0) scale(1.28); }
+  /* ensure hover over the whole bot card restores the star */
+  .bot-card:hover .typing-star{ opacity:1 !important; transform:translateY(0) scale(1.08) !important; }
 
   /* input */
   .input-area{padding:12px;border-top:1px solid rgba(255,255,255,0.03);display:flex;align-items:center;gap:10px}
@@ -117,7 +120,7 @@
   .send-circle img{width:18px;height:18px}
 
   /* select / field ui (dark background + white text) */
-  .field{background:rgba(0,0,0,0.9); color:#fff; border-radius:8px; padding:8px; border:1px solid rgba(255,255,255,0.04); font-family:var(--font);}
+  .field{background:rgba(0,0,0,0.9); color:#fff; border-radius:8px; padding:8px; border:1px solid rgba(255,255,255,0.04); font-family:var(--font)}
 
   /* purchase button & spinner */
   .purchase-btn{ background: linear-gradient(90deg,var(--accent-a),var(--accent-b)); color:#fff; border:0; padding:10px 12px; border-radius:8px; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:8px; box-shadow:0 12px 30px rgba(0,0,0,0.3); }
@@ -127,12 +130,12 @@
   /* modal, inputs */
   .modal-backdrop{position:fixed;inset:0;background:rgba(2,4,10,0.85);display:flex;align-items:center;justify-content:center;z-index:90}
   .modal{width:520px;max-width:calc(100% - 32px);background:linear-gradient(180deg, #0b0712, #0f0716);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 20px 60px rgba(0,0,0,0.6)}
-  .modal img.full{width:100%;height:auto;border-radius:8px;margin:6px 0} /* tightened margins above/below the full logo */
+  .modal img.full{width:100%;height:auto;border-radius:8px;margin:6px 0}
   .field{width:100%;padding:8px;border-radius:8px;background:rgba(0,0,0,0.9);border:1px solid rgba(255,255,255,0.04);color:#fff;font-family:var(--font)}
   .ttt-board{width:320px;height:320px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;position:relative}
   .ttt-cell{background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;font-size:46px;border-radius:8px;cursor:pointer;transition:transform .12s, background .12s;user-select:none;aspect-ratio:1/1}
   .ttt-cell:hover{transform:scale(1.04);background:rgba(255,255,255,0.035)}
-  .ttt-line{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none; display:none} /* hidden by default; we removed the line feature */
+  .ttt-line{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none; display:none}
 
   .reset-btn{position:fixed;right:18px;bottom:18px;z-index:60;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02);color:#fff;border:1px solid rgba(255,255,255,0.04);cursor:pointer}
 
@@ -146,7 +149,7 @@
     <aside class="sidebar">
       <header class="sidebar-h">
         <div style="display:flex;align-items:center;gap:8px">
-          <!-- makalina button: IMAGE ONLY, positioned above tip -->
+          <!-- makalina button: IMAGE ONLY -->
           <button id="makalinaBtn" class="makalina-img" title="Get Makalina">
             <img src="makalina.png" alt="makalina">
           </button>
@@ -243,13 +246,22 @@ const convListEl = $('#convList'), messagesWrap = $('#messages'), newConvBtn = $
       resetBtn = $('#resetBtn'), userInfo = $('#userInfo'), userPfp = $('#userPfp'),
       userNameDisplay = $('#userNameDisplay'), coinCountEl = $('#coinCount');
 
+/* ---------- favicon helper ---------- */
+function setFavicon(){
+  const link = document.getElementById('favicon') || document.createElement('link');
+  link.id = 'favicon';
+  link.rel = 'icon';
+  link.href = settings.makalinaOwned ? '/makalina.ico' : '/makala.ico';
+  if(!document.getElementById('favicon')) document.head.appendChild(link);
+}
+
 /* ---------- init ---------- */
 (function ensureDefault(){
   if(convs.length===0){ const c={id:uid(),title:'New conversation',created:Date.now(),messages:[],renderedCount:0,personality:'makala'}; convs.unshift(c); activeConvId=c.id; saveConvs(); saveActive(); }
   if(!activeConvId) activeConvId = convs[0].id;
 })();
 (function initTheme(){ const t = localStorage.getItem('makala_theme')||'pink'; document.body.className = 'theme-'+t; themeSelect.value=t; })();
-renderConvList(); setActiveConv(activeConvId, { clear:true, animate:false }); renderUserInfo(); enforceMakalinaAvailability();
+setFavicon(); renderConvList(); setActiveConv(activeConvId, { clear:true, animate:false }); renderUserInfo(); enforceMakalinaAvailability();
 
 /* ---------- conv list ---------- */
 function relativeTime(ts){ const now=Date.now(); const s = Math.floor((now-ts)/1000); if(s<60) return 'just now'; if(s<3600) return Math.floor(s/60)+'m ago'; const dNow=new Date(), dTs=new Date(ts); if(dNow.toDateString()===dTs.toDateString()) return 'Today'; const yesterday=new Date(now-86400000); if(yesterday.toDateString()===dTs.toDateString()) return 'Yesterday'; const days=Math.floor(s/86400); if(days<7) return days+'d ago'; if(days<30) return Math.floor(days/7)+'w ago'; const yrs=Math.floor(days/365); if(yrs===1) return 'A year ago'; if(yrs>=2) return 'A long time ago'; return Math.floor(days/30)+'mo ago'; }
@@ -257,7 +269,8 @@ function relativeTime(ts){ const now=Date.now(); const s = Math.floor((now-ts)/1
 function renderConvList(){
   convListEl.innerHTML=''; convs.forEach(c=>{
     const el=document.createElement('div'); el.className='conv'+(c.id===activeConvId?' active':''); el.dataset.id=c.id;
-    const icon=document.createElement('img'); icon.src=(c.personality==='makalina'?'linastar.png':'makala.png'); icon.style.width='28px'; icon.style.height='28px'; icon.style.borderRadius='6px';
+    // USE linalogo.png as the convo icon for makalina personality (not the star)
+    const icon=document.createElement('img'); icon.src=(c.personality==='makalina'?'linalogo.png':'makala.png'); icon.style.width='28px'; icon.style.height='28px'; icon.style.borderRadius='6px';
     const inner=document.createElement('div'); inner.innerHTML = `<div style="font-size:14px">${sanitize(c.title||'New conversation')}</div><div class="conv-meta">${relativeTime(c.created||Date.now())}</div>`;
     const trash=document.createElement('img'); trash.src='trash.png'; trash.className='trash'; trash.alt='del';
     el.appendChild(icon); el.appendChild(inner); el.appendChild(trash); convListEl.appendChild(el);
@@ -271,7 +284,7 @@ function deleteConv(id){ const i=convs.findIndex(x=>x.id===id); if(i>=0) convs.s
 
 function setActiveConv(id, opts={clear:false,animate:false}){ activeConvId=id; saveActive(); renderConvList(); const conv=convs.find(x=>x.id===id); if(!conv) return; convTitle.textContent = conv.title || 'New conversation'; convPersonality.value = conv.personality || 'makala'; if(opts.clear){ messagesWrap.innerHTML=''; conv.renderedCount=0; } const start = conv.renderedCount||0; for(let i=start;i<conv.messages.length;i++){ appendMessageToDOM(conv, conv.messages[i], { animate: (i===conv.messages.length-1) && !!opts.animate }); conv.renderedCount = i+1; } messagesWrap.scrollTop = messagesWrap.scrollHeight; brandImg.src = (conv.personality==='makalina') ? 'linastar.png' : 'makala.png'; enforceMakalinaAvailability(); }
 
-/* ---------- message rendering (kept same) ---------- */
+/* ---------- message rendering ---------- */
 function appendUserToDOM(conv, m, { animate=false } = {}){
   const row=document.createElement('div'); row.className='row-user';
   const bubble=document.createElement('div'); bubble.className='user-bubble';
@@ -285,6 +298,7 @@ function appendUserToDOM(conv, m, { animate=false } = {}){
 function appendBotToDOM(conv, m, { animate=false } = {}){
   const cont=document.createElement('div'); cont.className='bot-card';
   const meta=document.createElement('div'); meta.className='bot-meta';
+  // small icon displayed beside bot label: keep it as star for typing; but convo icon uses linalogo
   const small=document.createElement('img'); small.src=(conv.personality==='makalina'?'linastar.png':'makala.png'); small.alt='m'; small.style.width='18px'; small.style.height='18px';
   const label=document.createElement('div'); label.className='bot-label'; label.textContent=(conv.personality==='makalina'?'makalina ai':'makala ai');
   const metaCopy=document.createElement('div'); metaCopy.className='meta-copy'; metaCopy.title='copy'; metaCopy.innerHTML=`<img src="copy.png" alt="copy">`;
@@ -293,14 +307,27 @@ function appendBotToDOM(conv, m, { animate=false } = {}){
   const body=document.createElement('div'); body.className='bot-body';
   cont.appendChild(meta); cont.appendChild(body); messagesWrap.appendChild(cont); messagesWrap.scrollTop = messagesWrap.scrollHeight;
 
+  // hover behavior: show star when hovering over the bot card
+  cont.addEventListener('mouseenter', ()=> {
+    const s = cont.querySelector('.typing-star'); if(s) s.classList.add('visible');
+  });
+  cont.addEventListener('mouseleave', ()=> {
+    const s = cont.querySelector('.typing-star'); if(s && !s.dataset.persistent) s.classList.remove('visible');
+  });
+
   if(animate){
     typeMarkdownIntoElement(rtrimNewlines(m.content||''), body, conv);
   } else {
     body.innerHTML = sanitizeAndTrim(marked.parse(rtrimNewlines(m.content||'')));
     renderMathInElement(body); attachCodeCopyButtons(body);
+    // attach a small star (hidden) so hovering reveals it consistently
+    const s = attachOrGetStar(body, conv);
+    s.classList.remove('visible'); // keep hidden until hover
+    s.dataset.persistent = '0';
   }
 }
 
+/* trim trailing blanks */
 function sanitizeAndTrim(html){
   const clean = DOMPurify.sanitize(html);
   const wrapper = document.createElement('div'); wrapper.innerHTML = clean;
@@ -318,22 +345,25 @@ function isEmptyNode(node){
   return false;
 }
 
-/* typing star */
+/* typing star (attach to last paragraph / end of content) */
 function attachOrGetStar(container, conv){
   let s = container.querySelector('.typing-star');
   if(!s){
     s = document.createElement('span'); s.className='typing-star';
     const img = document.createElement('img'); img.src = (conv.personality==='makalina'?'linastar.png':'star.png'); img.alt='*'; img.style.width='100%'; img.style.height='100%';
     s.appendChild(img);
+    // append to last paragraph if available, otherwise append to container
     const lastP = container.querySelector('p:last-of-type') || container.lastElementChild;
     if(lastP) lastP.appendChild(s); else container.appendChild(s);
+    s.dataset.persistent = '0';
+    // hover restore handled on container hover via event listeners in appendBotToDOM
   } else {
     const img = s.querySelector('img'); if(img) img.src = (conv.personality==='makalina'?'linastar.png':'star.png');
   }
   return s;
 }
 
-/* typing reveal */
+/* typing reveal (per char) with bigger temporary star while generating */
 async function typeMarkdownIntoElement(text, container, conv){
   container.dataset.animating = '1';
   container.innerHTML = '';
@@ -346,7 +376,9 @@ async function typeMarkdownIntoElement(text, container, conv){
     if(flush){
       container.innerHTML = sanitizeAndTrim(marked.parse(rtrimNewlines(buffer)));
       renderMathInElement(container); attachCodeCopyButtons(container);
-      const s = attachOrGetStar(container, conv); s.classList.add('visible');
+      const s = attachOrGetStar(container, conv);
+      s.classList.add('visible','big');
+      s.dataset.persistent = '0';
       await new Promise(r=>setTimeout(r, baseDelay * (1 + Math.random()*0.4)));
     } else {
       await new Promise(r=>setTimeout(r, baseDelay));
@@ -355,11 +387,13 @@ async function typeMarkdownIntoElement(text, container, conv){
   }
   container.innerHTML = sanitizeAndTrim(marked.parse(rtrimNewlines(text)));
   renderMathInElement(container); attachCodeCopyButtons(container);
-  const finalStar = attachOrGetStar(container, conv); finalStar.classList.add('visible');
+  const finalStar = attachOrGetStar(container, conv); finalStar.classList.add('visible'); finalStar.classList.remove('big');
+  finalStar.dataset.persistent = '0';
+  // keep visible for 1.5s then hide unless hovered
   await new Promise(r=>setTimeout(r, 1500));
   if(!finalStar.matches(':hover')) finalStar.classList.remove('visible');
   finalStar.addEventListener('mouseenter', ()=> finalStar.classList.add('visible'));
-  finalStar.addEventListener('mouseleave', ()=> finalStar.classList.remove('visible'));
+  finalStar.addEventListener('mouseleave', ()=> { if(finalStar.dataset.persistent !== '1') finalStar.classList.remove('visible'); });
   delete container.dataset.animating;
 }
 
@@ -476,31 +510,26 @@ function autoResize(){ input.style.height='auto'; input.style.height = Math.min(
 /* code copy delegation */
 document.addEventListener('click', (ev)=> { const c = ev.target.closest('.copy-code'); if(c){ const pre = ev.target.closest('pre'); const code = pre && pre.querySelector('code'); if(code) navigator.clipboard.writeText(code.textContent); } });
 
-/* ---------- Makalina modal / purchase (UPDATED) ---------- */
+/* ---------- Makalina modal / purchase (uses fullmakalina.png) ---------- */
 function openMakalinaModal(){
   modalContainer.innerHTML = `<div class="modal-backdrop"><div class="modal">
-    <!-- logo in place of "Purchase Makalina" -->
-    <img src="makalina.png" alt="makalina" class="full" style="margin-top:6px;margin-bottom:6px;max-height:120px;object-fit:contain">
+    <!-- show fullmakalina.png at top -->
+    <img src="fullmakalina.png" alt="makalina" class="full" style="margin-top:6px;margin-bottom:6px;max-height:120px;object-fit:contain">
     <h3 style="margin:6px 0">Purchase Makalina</h3>
-
-    <p style="color:var(--muted);margin:6px 0 12px">Makalina adds a refined persona and cosmetic perks. Demo price: <strong>$0.00</strong></p>
-
+    <p style="color:var(--muted);margin:6px 0 12px">makalina lets you talk to a more matured persona, and lets you play tic-tac-toe. Base price: <strong>$0.00</strong></p>
     <div style="display:flex;gap:8px;margin-bottom:8px">
       <input id="buyerName" class="field" placeholder="Display name (optional)"/>
-      <input id="favNumber" class="field" placeholder="Favourite number" style="max-width:120px"/>
+      <input id="favNumber" class="field" placeholder="Fav number" style="max-width:120px"/>
     </div>
-
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
       <label style="color:var(--muted);margin-right:6px">Profile image</label>
       <input id="pfpFile" type="file" accept="image/*" class="field" style="max-width:220px"/>
     </div>
-
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
       <input id="discountCode" class="field" placeholder="Discount code (optional)" style="max-width:220px"/>
       <button id="applyDiscount" class="new-btn">Apply</button>
       <div id="discountRow" style="color:var(--muted);margin-left:auto;display:none">discount: <strong id="discountPct">-25%</strong></div>
     </div>
-
     <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
       <div>
         <div>subtotal: <strong>$0.00</strong></div>
@@ -525,7 +554,6 @@ function openMakalinaModal(){
   $('#confirmBuy').addEventListener('click', ()=>{
     const btn = $('#confirmBuy');
     btn.disabled = true;
-    // show small spinner + "loading"
     const original = btn.innerHTML;
     btn.innerHTML = `<span class="btn-spinner" aria-hidden></span><span style="font-size:13px">loading</span>`;
     const start = Date.now();
@@ -533,7 +561,6 @@ function openMakalinaModal(){
     const name = $('#buyerName').value.trim();
     const file = $('#pfpFile').files && $('#pfpFile').files[0];
 
-    // on completion, ensure at least 1s spinner shown before refresh
     const finish = (pfpData) => {
       settings.makalinaOwned = true;
       if(name) settings.userName = name;
@@ -546,7 +573,7 @@ function openMakalinaModal(){
 
     if(file){
       const reader = new FileReader();
-      reader.onload = e=> { finish(e.target.result); };
+      reader.onload = e=>{ finish(e.target.result); };
       reader.onerror = ()=> { finish(null); };
       reader.readAsDataURL(file);
     } else {
@@ -554,11 +581,11 @@ function openMakalinaModal(){
     }
   });
 }
-function refreshAfterPurchase(){ document.getElementById('favicon').href = '/makalina.ico'; refreshMakalinaUI(); renderUserInfo(); setTimeout(()=> location.reload(), 250); }
+function refreshAfterPurchase(){ setFavicon(); refreshMakalinaUI(); renderUserInfo(); setTimeout(()=> location.reload(), 250); }
 
 /* ---------- user info ---------- */
 function renderUserInfo(){ if(settings.makalinaOwned){ userInfo.style.display='flex'; userNameDisplay.textContent = settings.userName || 'you'; coinCountEl.textContent = settings.coins || 0; if(settings.pfpData) userPfp.querySelector('img').src = settings.pfpData; else userPfp.querySelector('img').src = 'makala.png'; } else userInfo.style.display='none'; }
-function refreshMakalinaUI(){ if(settings.makalinaOwned){ makalinaBtn.style.display='none'; document.getElementById('favicon').href='/makalina.ico'; playTttBtn.style.display='inline-flex'; } else { makalinaBtn.style.display='inline-flex'; document.getElementById('favicon').href='/makala.ico'; playTttBtn.style.display='none'; } renderUserInfo(); enforceMakalinaAvailability(); }
+function refreshMakalinaUI(){ if(settings.makalinaOwned){ makalinaBtn.style.display='none'; setFavicon(); playTttBtn.style.display='inline-flex'; } else { makalinaBtn.style.display='inline-flex'; setFavicon(); playTttBtn.style.display='none'; } renderUserInfo(); enforceMakalinaAvailability(); }
 refreshMakalinaUI();
 
 /* Ensure Makalina personality option and TTT availability reflect ownership */
@@ -566,20 +593,16 @@ function enforceMakalinaAvailability(){
   const opt = Array.from(convPersonality.options).find(o=>o.value==='makalina');
   if(opt) opt.disabled = !settings.makalinaOwned;
   if(!settings.makalinaOwned){
-    // if current conv selected makalina, revert to makala
     const conv = convs.find(c=>c.id===activeConvId);
     if(conv && conv.personality==='makalina'){ conv.personality='makala'; saveConvs(); setActiveConv(activeConvId,{clear:true,animate:false}); }
   }
-  // hide play button entirely when not owned
   playTttBtn.style.display = settings.makalinaOwned ? 'inline-flex' : 'none';
-  // makalina button triggers buy modal if not owned, otherwise hidden by refreshMakalinaUI
   makalinaBtn.onclick = ()=> { if(!settings.makalinaOwned) openMakalinaModal(); };
 }
 
-/* ---------- Tic Tac Toe (no win line) ---------- */
+/* ---------- Tic Tac Toe (unchanged behavior but hidden if not owned) ---------- */
 function openTicTacToe(){
-  if(!settings.makalinaOwned){ openMakalinaModal(); return; } // unplayable if not owned
-
+  if(!settings.makalinaOwned){ openMakalinaModal(); return; }
   modalContainer.innerHTML = `<div class="modal-backdrop"><div class="modal"><h3 style="margin:0 0 8px">tic tac toe — play makala</h3><div id="tttBoardWrapper" style="position:relative"><div id="tttBoard" class="ttt-board"></div></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px"><div>Your coins: <img src="coins.png" style="width:18px;height:18px;vertical-align:middle;margin-right:6px" class="spin"> <span id="coinCountModal">${settings.coins}</span></div><div style="display:flex;gap:8px"><button id="tttReset" class="new-btn">Reset board</button><button id="closeTtt" class="new-btn">Close</button></div></div></div></div>`;
   modalContainer.style.display='block';
   const board = $('#tttBoard'); let state = Array(9).fill(''); let done=false;
@@ -588,7 +611,7 @@ function openTicTacToe(){
   function renderBoard(){ board.innerHTML=''; state.forEach((v,i)=>{ const cell=document.createElement('div'); cell.className='ttt-cell'; cell.dataset.i=i; if(v==='X'){ const img=document.createElement('img'); img.src = (conv.personality==='makalina'?'linastar.png':'star.png'); img.style.width='46px'; img.style.height='46px'; cell.appendChild(img); } else if(v==='O'){ cell.textContent='O'; } cell.addEventListener('click', ()=> onCell(i,cell)); board.appendChild(cell); }); }
   function onCell(i,el){ if(done || state[i]) return; state[i]='O'; renderBoard(); if(checkWin('O')) return endGame(true); if(state.every(Boolean)) return endGame(null); setTimeout(()=>{ const free = state.map((v,idx)=> v?null:idx).filter(v=>v!==null); const pick = free[Math.floor(Math.random()*free.length)]; state[pick]='X'; renderBoard(); if(checkWin('X')) return endGame(false); if(state.every(Boolean)) return endGame(null); }, 420); }
   function checkWin(sym){ const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; return wins.find(w=> w.every(i=> state[i]===sym)); }
-  function endGame(userWon){ done=true; const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; const w=wins.find(wi=> wi.every(i=> state[i]=== (userWon? 'O' : 'X'))); const amt=Math.floor(Math.random()*50)+1; if(userWon===true){ settings.coins=(settings.coins||0)+amt; setTimeout(()=> alert(`you win ${amt} makala's coins!`), 120); } else if(userWon===false){ settings.coins=Math.max(0,(settings.coins||0)-amt); setTimeout(()=> alert(`you lost ${amt} coins...`), 120); } else setTimeout(()=> alert('draw — no coins'), 120); saveOwnership(); $('#coinCountModal').textContent=settings.coins; coinCountEl.textContent=settings.coins; setTimeout(()=>{ state = Array(9).fill(''); done=false; renderBoard(); }, 2200); }
+  function endGame(userWon){ done=true; const amt=Math.floor(Math.random()*50)+1; if(userWon===true){ settings.coins=(settings.coins||0)+amt; setTimeout(()=> alert(`you win ${amt} makala's coins!`), 120); } else if(userWon===false){ settings.coins=Math.max(0,(settings.coins||0)-amt); setTimeout(()=> alert(`you lost ${amt} coins...`), 120); } else setTimeout(()=> alert('draw — no coins'), 120); saveOwnership(); $('#coinCountModal').textContent=settings.coins; coinCountEl.textContent=settings.coins; setTimeout(()=>{ state = Array(9).fill(''); done=false; renderBoard(); }, 2200); }
   $('#tttReset').addEventListener('click', ()=> { state = Array(9).fill(''); done=false; renderBoard(); });
   $('#closeTtt').addEventListener('click', ()=> { modalContainer.innerHTML=''; modalContainer.style.display='none'; });
   renderBoard();
